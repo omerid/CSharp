@@ -8,7 +8,7 @@ namespace Ex04.Menus.Interfaces
 {
     public abstract class MenuItem
     {
-        private readonly string r_ButtonTitle;
+        protected readonly string r_ButtonTitle;
 
         public abstract void HandleUserSelection();
 

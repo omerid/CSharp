@@ -8,9 +8,13 @@ namespace Ex04.Menus.Test
 {
     public class Program
     {
-        public void Main()
+        public static void Main()
         {
+            DelegatesMenuBuild DelegateMain = new DelegatesMenuBuild();
+            DelegateMain.ShowMenu();
 
+            InterfacesMenuBuild InterfacesMenu = new InterfacesMenuBuild();
+            InterfacesMenu.ShowMenu();
         }
     }
 }

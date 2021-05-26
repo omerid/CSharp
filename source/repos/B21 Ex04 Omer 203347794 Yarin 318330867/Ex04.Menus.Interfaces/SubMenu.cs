@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ex04.Menus.Delegates
+namespace Ex04.Menus.Interfaces
 {
     public class SubMenu : MenuItem
     {
@@ -31,7 +31,7 @@ namespace Ex04.Menus.Delegates
         {
             bool continueToNextIteration = true;
 
-            while(continueToNextIteration == true)
+            while (continueToNextIteration == true)
             {
                 Console.Clear();
                 int userChoice = HelperHandleUserSelection();
@@ -67,7 +67,7 @@ $@"=======================================
         {
             int numberOfItemsInMenu = SubMenuList.Count;
 
-            if(numberOfItemsInMenu == 0)
+            if (numberOfItemsInMenu == 0)
             {
                 Console.WriteLine("The Menu Is Empty");
             }

@@ -6,7 +6,26 @@ using System.Threading.Tasks;
 
 namespace Ex04.Menus.Interfaces
 {
-    class ButtonAction
+    public class ButtonAction : MenuItem
     {
+        protected LButtonActionFunction Clicked;
+
+        public ButtonAction(string i_ButtonTitle, LButtonActionFunction i_Function) : base(i_ButtonTitle)
+        {
+            Clicked = i_Function;
+        }
+
+        public void OnClicked()
+        {
+            if (Clicked != null)
+            {
+                Clicked.ButtonActionFunction();
+            }
+        }
+
+        public override void HandleUserSelection()
+        {
+            OnClicked();
+        }
     }
 }
