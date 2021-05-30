@@ -24,6 +24,5 @@ namespace Ex04.Menus.Delegates
         {
             m_SubMenu.HandleUserSelection();
         }
-
     }
 }

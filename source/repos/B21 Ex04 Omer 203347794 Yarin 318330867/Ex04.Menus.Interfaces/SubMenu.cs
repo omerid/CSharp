@@ -9,7 +9,7 @@ namespace Ex04.Menus.Interfaces
     public class SubMenu : MenuItem
     {
         private List<MenuItem> m_SubMenu;
-        private const int K_EndIndex = 0;
+        private const int k_EndIndex = 0;
 
         public SubMenu(string i_ButtonTitle, string i_ReturnType = "Back") : base(i_ButtonTitle)
         {
@@ -36,26 +36,27 @@ namespace Ex04.Menus.Interfaces
                 Console.Clear();
                 int userChoice = HelperHandleUserSelection();
                 DoUserSelection(userChoice);
-                continueToNextIteration = userChoice != K_EndIndex;
+                continueToNextIteration = userChoice != k_EndIndex;
             }
 
             Console.Clear();
         }
 
-        private void DoUserSelection(int i_UserChoice)
+        internal void DoUserSelection(int i_UserChoice)
         {
+            Console.Clear();
             m_SubMenu[i_UserChoice].HandleUserSelection();
         }
 
-        public int HelperHandleUserSelection()
+        internal int HelperHandleUserSelection()
         {
-            ShowTitle();
+            showTitle();
             ShowMenu();
             int userChoice = GetIndexFromUser();
             return userChoice;
         }
 
-        public void ShowTitle()
+        private void showTitle()
         {
             Console.WriteLine(
 $@"=======================================
@@ -81,11 +82,11 @@ $@"=======================================
                     Console.WriteLine($"{indexInMenu} - <{m_SubMenu[indexInMenu].ButtonTitle}>");
                 }
 
-                Console.WriteLine($"{K_EndIndex} - <{m_SubMenu[K_EndIndex].ButtonTitle}>");
+                Console.WriteLine($"{k_EndIndex} - <{m_SubMenu[k_EndIndex].ButtonTitle}>");
             }
         }
 
-        public int GetIndexFromUser()
+        internal int GetIndexFromUser()
         {
             string inputFromUser;
             int parsingInput = -1;

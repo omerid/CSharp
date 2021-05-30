@@ -42,12 +42,13 @@ namespace Ex04.Menus.Delegates
             Console.Clear();
         }
 
-        private void DoUserSelection(int i_UserChoice)
+        internal void DoUserSelection(int i_UserChoice)
         {
+            Console.Clear();
             m_SubMenu[i_UserChoice].HandleUserSelection();
         }
 
-        public int HelperHandleUserSelection()
+        internal int HelperHandleUserSelection()
         {
             ShowTitle();
             ShowMenu();
@@ -55,7 +56,7 @@ namespace Ex04.Menus.Delegates
             return userChoice;
         }
 
-        public void ShowTitle()
+        internal void ShowTitle()
         {
             Console.WriteLine(
 $@"=======================================
@@ -85,7 +86,7 @@ $@"=======================================
             }
         }
 
-        public int GetIndexFromUser()
+        internal int GetIndexFromUser()
         {
             string inputFromUser;
             int parsingInput = -1;

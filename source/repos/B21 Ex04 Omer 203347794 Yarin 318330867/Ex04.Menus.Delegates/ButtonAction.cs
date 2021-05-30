@@ -6,13 +6,11 @@ using System.Threading.Tasks;
 
 namespace Ex04.Menus.Delegates
 {
-    public delegate void ClickOtpion();
-
     public class ButtonAction : MenuItem
     {
-        public event ClickOtpion Clicked;
+        public event Action Clicked;
 
-        public ButtonAction(string i_ButtonTitle, ClickOtpion i_Function) : base (i_ButtonTitle)
+        public ButtonAction(string i_ButtonTitle, Action i_Function) : base (i_ButtonTitle)
         {
             Clicked += i_Function;
         }

@@ -14,7 +14,7 @@ namespace Ex04.Menus.Test
         public DelegatesMenuBuild()
         {
             m_Menu = new MainMenu("Main Menu - Delegates Test");
-            BuildTheMenu();
+            buildTheMenu();
         }
 
         public void ShowMenu()
@@ -22,7 +22,7 @@ namespace Ex04.Menus.Test
             m_Menu.Show();
         }
 
-        private void BuildTheMenu()
+        private void buildTheMenu()
         {
             SubMenu versionsAndSpaces = new SubMenu("Version & Spaces");
             versionsAndSpaces.AddItemToSubMenu(new ButtonAction("Show Verison", Functions.ShowVersion));
@@ -30,8 +30,8 @@ namespace Ex04.Menus.Test
             m_Menu.AddItemToSubMenu(versionsAndSpaces);
 
             SubMenu showDateTime = new SubMenu("Date & Time");
-            showDateTime.AddItemToSubMenu(new ButtonAction("Show Date", Functions.ShowDate));
             showDateTime.AddItemToSubMenu(new ButtonAction("Show Time", Functions.ShowTime));
+            showDateTime.AddItemToSubMenu(new ButtonAction("Show Date", Functions.ShowDate));
             m_Menu.AddItemToSubMenu(showDateTime);
         }
     }

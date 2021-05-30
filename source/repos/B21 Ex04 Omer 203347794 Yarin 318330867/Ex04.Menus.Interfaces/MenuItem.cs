@@ -21,6 +21,5 @@ namespace Ex04.Menus.Interfaces
         {
             get { return r_ButtonTitle; }
         }
-
     }
 }

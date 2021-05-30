@@ -49,7 +49,7 @@ namespace Ex04.Menus.Test
         {
             Console.WriteLine(
 @"-----------------------------------
-   < Press Any Key For Back To Menu >
+ < Press Any Key For Back To Menu >
 -----------------------------------");
 
             string dummyInput = Console.ReadLine();
