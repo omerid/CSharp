@@ -29,10 +29,10 @@
         private void InitializeComponent()
         {
             this.PlayersLable = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
+            this.Player1Lable = new System.Windows.Forms.Label();
             this.Player1TextBox = new System.Windows.Forms.TextBox();
             this.Player2CheckBox = new System.Windows.Forms.CheckBox();
-            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.Player2TextBox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // PlayersLable
@@ -44,14 +44,14 @@
             this.PlayersLable.TabIndex = 0;
             this.PlayersLable.Text = "Players:";
             // 
-            // label1
+            // Player1Lable
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(55, 38);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(48, 13);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "Player 1:";
+            this.Player1Lable.AutoSize = true;
+            this.Player1Lable.Location = new System.Drawing.Point(55, 38);
+            this.Player1Lable.Name = "Player1Lable";
+            this.Player1Lable.Size = new System.Drawing.Size(48, 13);
+            this.Player1Lable.TabIndex = 1;
+            this.Player1Lable.Text = "Player 1:";
             // 
             // Player1TextBox
             // 
@@ -69,15 +69,15 @@
             this.Player2CheckBox.TabIndex = 3;
             this.Player2CheckBox.Text = "Player 2:";
             this.Player2CheckBox.UseVisualStyleBackColor = true;
-            this.Player2CheckBox.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            this.Player2CheckBox.CheckedChanged += new System.EventHandler(this.Player2CheckBox_CheckedChanged);
             // 
-            // textBox2
+            // Player2TextBox
             // 
-            this.textBox2.Enabled = false;
-            this.textBox2.Location = new System.Drawing.Point(134, 66);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(116, 20);
-            this.textBox2.TabIndex = 4;
+            this.Player2TextBox.Enabled = false;
+            this.Player2TextBox.Location = new System.Drawing.Point(134, 66);
+            this.Player2TextBox.Name = "Player2TextBox";
+            this.Player2TextBox.Size = new System.Drawing.Size(116, 20);
+            this.Player2TextBox.TabIndex = 4;
             // 
             // GameSettings
             // 
@@ -85,10 +85,10 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(291, 270);
-            this.Controls.Add(this.textBox2);
+            this.Controls.Add(this.Player2TextBox);
             this.Controls.Add(this.Player2CheckBox);
             this.Controls.Add(this.Player1TextBox);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.Player1Lable);
             this.Controls.Add(this.PlayersLable);
             this.Cursor = System.Windows.Forms.Cursors.Arrow;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
@@ -102,9 +102,9 @@
         #endregion
 
         private System.Windows.Forms.Label PlayersLable;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label Player1Lable;
         private System.Windows.Forms.TextBox Player1TextBox;
         private System.Windows.Forms.CheckBox Player2CheckBox;
-        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.TextBox Player2TextBox;
     }
 }

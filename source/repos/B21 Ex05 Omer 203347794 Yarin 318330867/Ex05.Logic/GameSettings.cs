@@ -17,7 +17,7 @@ namespace Ex05.Logic
             InitializeComponent();
         }
 
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        private void Player2CheckBox_CheckedChanged(object sender, EventArgs e)
         {
 
         }
