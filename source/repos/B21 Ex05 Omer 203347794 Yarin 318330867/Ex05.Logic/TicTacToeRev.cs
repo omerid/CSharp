@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Ex05.Logic
 {
-    public class TicTacToeRevBL
+    public class TicTacToeRev
     {
         public enum eCurrentPlayer
         {
@@ -25,7 +25,7 @@ namespace Ex05.Logic
         private readonly eGameDefinition m_GameMode;
         private eCurrentPlayer m_CurrentTurn;
 
-        public TicTacToeRevBL(int i_Size, string i_PlayerOneName, string i_PlayerTwoName, eGameDefinition i_GameMode)
+        public TicTacToeRev(int i_Size, string i_PlayerOneName, string i_PlayerTwoName, eGameDefinition i_GameMode)
         {
             m_PlayerOne = new Player(i_PlayerOneName, 'X');
             m_PlayerTwo = new Player(i_PlayerTwoName, 'O');

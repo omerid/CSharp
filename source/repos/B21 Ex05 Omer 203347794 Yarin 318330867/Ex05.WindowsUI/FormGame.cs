@@ -8,18 +8,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Ex05.Logic
+namespace Ex05.WindowsUI
 {
-    public partial class GameSettings : Form
+    public partial class FormGame : Form
     {
-        public GameSettings()
+        public FormGame()
         {
             InitializeComponent();
-        }
-
-        private void Player2CheckBox_CheckedChanged(object sender, EventArgs e)
-        {
-
+            this.Size
         }
     }
 }
