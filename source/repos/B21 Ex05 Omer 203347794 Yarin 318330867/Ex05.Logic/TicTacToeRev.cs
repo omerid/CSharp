@@ -96,6 +96,16 @@ namespace Ex05.Logic
             }
         }
 
+        public string Player1Name
+        {
+            get { return m_PlayerOne.Name; }
+        }
+
+        public string Player2Name
+        {
+            get { return m_PlayerTwo.Name; }
+        }
+
         public void InitialNewRound()
         {
             m_GameMatrix.InitialBoard();

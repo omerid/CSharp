@@ -18,8 +18,26 @@ namespace Ex05.WindowsUI
             if(i_FormGameSettings.DialogResult == DialogResult.OK)
             {
                 InitGame(i_FormGameSettings);
+                InitFrontEnd(i_FormGameSettings);
             }
 
+        }
+
+        private void InitFrontEnd(FormGameSettings i_FormGameSettings)
+        {
+            m_GameUI = new FormGame(m_Game.Size);
+            m_GameUI.SetGameFormLablesAndTheirSize(m_Game.Player1Name, m_Game.Player2Name);
+            m_GameUI.AfterClick += afterClickOperations;
+        }
+
+        private void afterClickOperations(object sender, EventArgs e)
+        {
+            Button boardButton = sender as Button;
+            boardButton.Tags;
+            if (boardButton != null)
+            {
+                m_Game.SetCoordinate(boardButton.Tag)
+            }
         }
 
         private void InitGame(FormGameSettings i_FormGameSettings)
@@ -31,9 +49,10 @@ namespace Ex05.WindowsUI
             m_Game = new TicTacToeRev(boardSize, player1Name, player2Name, gameMode);
         }
 
+
         internal void RunGame()
         {
-            
+            m_GameUI.ShowDialog();
         }
     }
 }
