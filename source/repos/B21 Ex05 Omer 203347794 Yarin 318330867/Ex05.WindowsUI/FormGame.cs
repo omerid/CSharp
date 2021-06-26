@@ -124,5 +124,14 @@ namespace Ex05.WindowsUI
             ButtonToUpdate.Text = i_Sign;
             ButtonToUpdate.Enabled = false;
         }
+
+        public void RestartTheBoard()
+        {
+            foreach (Button boardButton in r_GameBoardButtons)
+            {
+                boardButton.Text = "";
+                boardButton.Enabled = true;
+            }
+        }
     }
 }

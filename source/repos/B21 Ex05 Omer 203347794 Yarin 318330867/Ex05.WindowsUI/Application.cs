@@ -28,6 +28,7 @@ namespace Ex05.WindowsUI
             m_GameUI = new FormGame(m_Game.Size);
             m_GameUI.SetGameFormLablesAndTheirSize(m_Game.Player1Name, m_Game.Player2Name);
             m_GameUI.AfterClick += afterClickOperations;
+            m_GameUI.AfterClick += computerMove;
         }
 
         private void afterClickOperations(object sender, EventArgs e)
@@ -38,11 +39,6 @@ namespace Ex05.WindowsUI
             {
                 /////אני צריך להזיז מפה את הפעולה הזו, להפריד בין התור של המחשב לשחקן הרגיל
                 m_Game.SetCoordinate(coordinateToSetUp.X, coordinateToSetUp.Y);
-                if(m_Game.GameMode == eGameDefinition.PlayerAgainstComputer && m_Game.CurrentPlayer.Name == "Computer")
-                {
-                    System.Threading.Thread.Sleep(1000);
-                    m_Game.ComputerMove();
-                }
             }
         }
 
@@ -55,6 +51,20 @@ namespace Ex05.WindowsUI
             m_Game = new TicTacToeRev(boardSize, player1Name, player2Name, gameMode);
             m_Game.GameOperationAfterClick += updateUiBoard;
             m_Game.GameOperationAfterClick += checkTheBoardStatus;
+
+        }
+
+        private void computerMove(object sender, EventArgs e)
+        {
+            bool gameOver = m_Game.HasGameFinishedWithDrawFlag || m_Game.HasGameFinishedWithWinnerFlag;
+            if (gameOver == false)
+            {
+                if (m_Game.GameMode == eGameDefinition.PlayerAgainstComputer && m_Game.CurrentPlayer.Name == "Computer")
+                {
+                    System.Threading.Thread.Sleep(250);
+                    m_Game.ComputerMove();
+                }
+            }
         }
 
         private void updateUiBoard(object sender, EventArgs e)
@@ -95,13 +105,20 @@ Would you like to play another round?");
 
                 if(dialog == DialogResult.Yes)
                 {
-
+                    NewRound();
                 }
                 else
                 {
                     m_GameUI.Close();
                 }
             }
+
+        }
+
+        private void NewRound()
+        {
+            m_Game.InitialNewRound();
+            m_GameUI.RestartTheBoard();
         }
 
         internal void RunGame()
