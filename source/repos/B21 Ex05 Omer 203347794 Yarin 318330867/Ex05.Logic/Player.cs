@@ -28,7 +28,7 @@ namespace Ex05.Logic
             set { m_Score = value; }
         }
 
-        public int Sign
+        public char Sign
         {
             get { return m_Sign; }
         }

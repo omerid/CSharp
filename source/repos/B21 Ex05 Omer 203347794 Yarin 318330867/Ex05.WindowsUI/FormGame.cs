@@ -8,8 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-
-
 namespace Ex05.WindowsUI
 {
     public partial class FormGame : Form
@@ -49,6 +47,10 @@ namespace Ex05.WindowsUI
             set { Player2ScoreLabel.Text = value; }
         }
 
+        public Button GetButtonByPoint(Point i_CellToChange)
+        {
+            return r_GameBoardButtons[i_CellToChange.X, i_CellToChange.Y];
+        }
 
         private void initialForm(int i_BoardSize)
         {
@@ -71,6 +73,7 @@ namespace Ex05.WindowsUI
             Button gameBoardButton = new Button();
             gameBoardButton.Size = new Size(k_TicTacTowButtonSize, k_TicTacTowButtonSize);
             gameBoardButton.Location = new Point(col * k_TicTacTowButtonSize + 13, row * k_TicTacTowButtonSize + 12);
+            gameBoardButton.Tag = new Point(row,col);
             //newButtonToReturn.BackColor = Color.Gray;
             gameBoardButton.Enabled = true;
             gameBoardButton.Click += new EventHandler(gameBoardButton_Click);
@@ -98,17 +101,28 @@ namespace Ex05.WindowsUI
         private void gameBoardButton_Click(object sender, EventArgs e)
         {
             Button gameBoardButton = sender as Button;
-            
+            Point p = (Point)gameBoardButton.Tag;
+
             if (gameBoardButton != null)
             {
                 if(gameBoardButton.Enabled == true)
                 {
-                    gameBoardButton.Enabled = false;
-                    AfterClick(gameBoardButton, r_GameBoardButtons.index);
+                    AfterClick(gameBoardButton, null);
                 }
             }
         }
 
+        public void UpdateScoreLables(int i_Player1Score, int i_Player2Score)
+        {
+            this.Player1ScoreLabel.Text = i_Player1Score.ToString();
+            this.Player2ScoreLabel.Text = i_Player2Score.ToString();
+        }
 
+        public void ChangeButtonSignAndEnablement(Point i_CoordinateToChange, string i_Sign)
+        {
+            Button ButtonToUpdate = GetButtonByPoint(i_CoordinateToChange);
+            ButtonToUpdate.Text = i_Sign;
+            ButtonToUpdate.Enabled = false;
+        }
     }
 }

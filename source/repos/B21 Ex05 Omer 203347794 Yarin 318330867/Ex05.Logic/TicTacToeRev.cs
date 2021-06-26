@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System.Drawing;
 
 namespace Ex05.Logic
 {
@@ -12,6 +13,8 @@ namespace Ex05.Logic
             PlayerOne = -1,
             PlayerTwo = 1
         }
+
+        public EventHandler GameOperationAfterClick;
 
         private char m_UnSuccessfulTicTacToePattern;
         private bool m_HasGameFinishedWithWinner;
@@ -96,6 +99,11 @@ namespace Ex05.Logic
             }
         }
 
+        public string GetSignByIndex(int i_Row, int i_Col)
+        {
+            return m_GameMatrix[i_Row,i_Col].ToString(); 
+        }
+
         public string Player1Name
         {
             get { return m_PlayerOne.Name; }
@@ -116,19 +124,19 @@ namespace Ex05.Logic
             m_CurrentTurn = eCurrentPlayer.PlayerOne;
         }
 
-        public bool GetHasGameFinishedWithWinnerFlag()
+        public bool HasGameFinishedWithWinnerFlag
         {
-            return m_HasGameFinishedWithWinner;
+            get { return m_HasGameFinishedWithWinner; }
         }
 
-        public bool GetHasGameFinishedWithRetirementFlag()
+        public bool HasGameFinishedWithRetirementFlag
         {
-            return m_HasGameFinishedWithRetirement;
+            get { return m_HasGameFinishedWithRetirement; }
         }
 
-        public bool GetHasGameFinishedWithDrawFlag()
+        public bool HasGameFinishedWithDrawFlag
         {
-            return m_HasGameFinishedWithDraw;
+            get { return m_HasGameFinishedWithDraw; }
         }
 
         public Player GetTheWinner()
@@ -171,9 +179,18 @@ namespace Ex05.Logic
                     m_GameMatrix[i_Row, i_Col] = ReturnCellToMark(m_CurrentTurn);
                     isTheSetCoordinateSucceeded = true;
                     MoveToNextTurn();
+                    OnGameOperationAfterClick(i_Row, i_Col);
                 }
             }
             return isTheSetCoordinateSucceeded;
+        }
+
+        public void OnGameOperationAfterClick(int i_Row, int i_Col)
+        {
+            if(GameOperationAfterClick != null)
+            {
+                GameOperationAfterClick(new Point(i_Row,i_Col),null);
+            }
         }
 
         public void SetPlayerRetirement()
