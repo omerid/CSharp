@@ -68,13 +68,12 @@ namespace Ex05.WindowsUI
             }
         }
 
-        private Button createAndInitialNewBoardButton(int row, int col)
+        private Button createAndInitialNewBoardButton(int i_Row, int i_Col)
         {
             Button gameBoardButton = new Button();
             gameBoardButton.Size = new Size(k_TicTacTowButtonSize, k_TicTacTowButtonSize);
-            gameBoardButton.Location = new Point(col * k_TicTacTowButtonSize + 13, row * k_TicTacTowButtonSize + 12);
-            gameBoardButton.Tag = new Point(row,col);
-            //newButtonToReturn.BackColor = Color.Gray;
+            gameBoardButton.Location = new Point(i_Col * k_TicTacTowButtonSize + 13, i_Row * k_TicTacTowButtonSize + 12);
+            gameBoardButton.Tag = new Point(i_Row,i_Col);
             gameBoardButton.Enabled = true;
             gameBoardButton.Click += new EventHandler(gameBoardButton_Click);
             return gameBoardButton;
@@ -82,17 +81,18 @@ namespace Ex05.WindowsUI
 
         public void SetGameFormLablesAndTheirSize(string i_Player1Name, string i_Player2Name)
         {
-            this.Player1Label.Location = new Point(this.Size.Width / 2 - k_TicTacTowButtonSize, this.ClientSize.Height - 25);
+            this.Player1Label.Location = new Point(this.ClientSize.Width / 2 - k_TicTacTowButtonSize - 10, this.ClientSize.Height - 25);
 
             this.Player1ScoreLabel.Left = this.Player1Label.Right;
             this.Player1ScoreLabel.Left -= 15;
-            this.Player1ScoreLabel.Top = Player1Label.Top;
+            this.Player1ScoreLabel.Top = this.Player1Label.Top;
+            this.Player1ScoreLabel.BringToFront();
 
-            this.Player2Label.Left = Player1ScoreLabel.Right;
-            this.Player2Label.Top = Player1ScoreLabel.Top;
+            this.Player2Label.Left = this.Player1ScoreLabel.Right + 10;
+            this.Player2Label.Top = this.Player1ScoreLabel.Top;
 
-            this.Player2ScoreLabel.Left = Player2Label.Right + 3;
-            this.Player2ScoreLabel.Top = Player2Label.Top;
+            this.Player2ScoreLabel.Left = this.Player2Label.Right + 5;
+            this.Player2ScoreLabel.Top = this.Player2Label.Top;
 
             this.Player1Label.Text = string.Format($"{i_Player1Name}:");
             this.Player2Label.Text = string.Format($"{i_Player2Name}:");
@@ -118,11 +118,30 @@ namespace Ex05.WindowsUI
             this.Player2ScoreLabel.Text = i_Player2Score.ToString();
         }
 
-        public void ChangeButtonSignAndEnablement(Point i_CoordinateToChange, string i_Sign)
+        public void ChangeButtonSignEnablementAndBold(Point i_CoordinateToChange, string i_Sign)
         {
+            ChangeLableBold();
             Button ButtonToUpdate = GetButtonByPoint(i_CoordinateToChange);
             ButtonToUpdate.Text = i_Sign;
             ButtonToUpdate.Enabled = false;
+        }
+
+        public void ChangeLableBold()
+        {
+            if(Player1Label.Font.Bold == true)
+            {
+                this.Player2Label.Font = new Font(this.Player2Label.Font, FontStyle.Bold);
+                this.Player2ScoreLabel.Font = new Font(this.Player2ScoreLabel.Font, FontStyle.Bold);
+                this.Player1Label.Font = new Font(this.Player1Label.Font, FontStyle.Regular);
+                this.Player1ScoreLabel.Font = new Font(this.Player1ScoreLabel.Font, FontStyle.Regular);
+            }
+            else
+            {
+                this.Player2Label.Font = new Font(this.Player2Label.Font, FontStyle.Regular);
+                this.Player2ScoreLabel.Font = new Font(this.Player2ScoreLabel.Font, FontStyle.Regular);
+                this.Player1Label.Font = new Font(this.Player1Label.Font, FontStyle.Bold);
+                this.Player1ScoreLabel.Font = new Font(this.Player1ScoreLabel.Font, FontStyle.Bold);
+            }
         }
 
         public void RestartTheBoard()
@@ -132,6 +151,11 @@ namespace Ex05.WindowsUI
                 boardButton.Text = "";
                 boardButton.Enabled = true;
             }
+
+            this.Player2Label.Font = new Font(this.Player2Label.Font, FontStyle.Regular);
+            this.Player2ScoreLabel.Font = new Font(this.Player2ScoreLabel.Font, FontStyle.Regular);
+            this.Player1Label.Font = new Font(this.Player1Label.Font, FontStyle.Bold);
+            this.Player1ScoreLabel.Font = new Font(this.Player1ScoreLabel.Font, FontStyle.Bold);
         }
     }
 }

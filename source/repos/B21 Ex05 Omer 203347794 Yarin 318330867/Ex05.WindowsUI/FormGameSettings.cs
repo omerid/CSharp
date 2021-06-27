@@ -45,7 +45,6 @@ namespace Ex05.WindowsUI
                 Player2TextBox.BackColor = System.Drawing.SystemColors.Control;
                 Player2TextBox.Text = "[Computer]";
             }
-
         }
 
         private void buttonStart_Click(object sender, EventArgs e)

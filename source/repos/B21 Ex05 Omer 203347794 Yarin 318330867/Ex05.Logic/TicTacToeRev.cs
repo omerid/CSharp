@@ -180,6 +180,7 @@ namespace Ex05.Logic
                     isTheSetCoordinateSucceeded = true;
                     MoveToNextTurn();
                     OnGameOperationAfterClick(i_Row, i_Col);
+
                 }
             }
             return isTheSetCoordinateSucceeded;

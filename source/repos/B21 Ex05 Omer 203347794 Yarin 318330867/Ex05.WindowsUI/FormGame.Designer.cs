@@ -39,16 +39,19 @@ namespace Ex05.WindowsUI
             // Player1ScoreLabel
             // 
             this.Player1ScoreLabel.AutoSize = true;
-            //this.Player1ScoreLabel.Location = new System.Drawing.Point(324, 544);
+            this.Player1ScoreLabel.Font = new System.Drawing.Font(this.Player1ScoreLabel.Font, FontStyle.Bold);
+            this.Player1ScoreLabel.Location = new System.Drawing.Point(324, 544);
             this.Player1ScoreLabel.Name = "Player1ScoreLabel";
             this.Player1ScoreLabel.Size = new System.Drawing.Size(13, 13);
             this.Player1ScoreLabel.TabIndex = 1;
+            this.Player1ScoreLabel.BringToFront();
             this.Player1ScoreLabel.Text = "0";
             // 
             // Player2ScoreLabel
             // 
             this.Player2ScoreLabel.AutoSize = true;
-            //this.Player2ScoreLabel.Location = new System.Drawing.Point(390, 544);
+            this.Player2ScoreLabel.Font = new System.Drawing.Font(this.Player2ScoreLabel.Font, FontStyle.Regular);
+            this.Player2ScoreLabel.Location = new System.Drawing.Point(390, 544);
             this.Player2ScoreLabel.Name = "Player2ScoreLabel";
             this.Player2ScoreLabel.Size = new System.Drawing.Size(13, 13);
             this.Player2ScoreLabel.TabIndex = 3;
@@ -57,7 +60,8 @@ namespace Ex05.WindowsUI
             // Player2Label
             // 
             this.Player2Label.AutoSize = true;
-            //this.Player2Label.Location = new System.Drawing.Point(343, 544);
+            this.Player2Label.Font = new System.Drawing.Font(this.Player2Label.Font, FontStyle.Regular);
+            this.Player2Label.Location = new System.Drawing.Point(343, 544);
             this.Player2Label.Name = "Player2Label";
             this.Player2Label.Size = new System.Drawing.Size(48, 13);
             this.Player2Label.TabIndex = 2;
@@ -66,11 +70,13 @@ namespace Ex05.WindowsUI
             // Player1Label
             // 
             this.Player1Label.AutoSize = true;
-            //this.Player1Label.Location = new System.Drawing.Point(279, 544);
+            this.Player1Label.Font = new System.Drawing.Font(this.Player1Label.Font, System.Drawing.FontStyle.Bold);
+            this.Player1Label.Location = new System.Drawing.Point(279, 544);
             this.Player1Label.Name = "Player1Label";
             this.Player1Label.Size = new System.Drawing.Size(48, 13);
             this.Player1Label.TabIndex = 0;
             this.Player1Label.Text = "Player 1:";
+            this.Player1Label.SendToBack();
             // 
             // FormGame
             // 
@@ -87,7 +93,6 @@ namespace Ex05.WindowsUI
             this.Text = "TicTacToe ReveresMode";
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion

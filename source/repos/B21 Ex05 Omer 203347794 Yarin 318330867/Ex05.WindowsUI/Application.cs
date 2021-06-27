@@ -37,7 +37,6 @@ namespace Ex05.WindowsUI
             Point coordinateToSetUp = (Point)boardButton.Tag;
             if (boardButton != null)
             {
-                /////אני צריך להזיז מפה את הפעולה הזו, להפריד בין התור של המחשב לשחקן הרגיל
                 m_Game.SetCoordinate(coordinateToSetUp.X, coordinateToSetUp.Y);
             }
         }
@@ -51,7 +50,6 @@ namespace Ex05.WindowsUI
             m_Game = new TicTacToeRev(boardSize, player1Name, player2Name, gameMode);
             m_Game.GameOperationAfterClick += updateUiBoard;
             m_Game.GameOperationAfterClick += checkTheBoardStatus;
-
         }
 
         private void computerMove(object sender, EventArgs e)
@@ -61,7 +59,6 @@ namespace Ex05.WindowsUI
             {
                 if (m_Game.GameMode == eGameDefinition.PlayerAgainstComputer && m_Game.CurrentPlayer.Name == "Computer")
                 {
-                    System.Threading.Thread.Sleep(250);
                     m_Game.ComputerMove();
                 }
             }
@@ -73,7 +70,7 @@ namespace Ex05.WindowsUI
             if (sender.GetType() == typeof(Point))
             {
                 coordinateToChange = (Point)sender;
-                m_GameUI.ChangeButtonSignAndEnablement(coordinateToChange, m_Game.GetSignByIndex(coordinateToChange.X, coordinateToChange.Y));
+                m_GameUI.ChangeButtonSignEnablementAndBold(coordinateToChange, m_Game.GetSignByIndex(coordinateToChange.X, coordinateToChange.Y));
             }
         }
 
@@ -112,7 +109,6 @@ Would you like to play another round?");
                     m_GameUI.Close();
                 }
             }
-
         }
 
         private void NewRound()
