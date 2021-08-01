@@ -5,17 +5,23 @@ using namespace std;
 #include <winsock2.h>
 #include <string.h>
 #include <time.h>
+#include <ctime>
+
 
 #define TIME_PORT	27015
 
 bool initWinSocket(WSAData& wsaData);
-bool connectiontStart(WSAData& wsaData, SOCKET& connSocket, sockaddr_in& server);
+bool connectionStart(WSAData& wsaData, SOCKET& connSocket, sockaddr_in& server);
 bool socketStart(SOCKET& m_socket);
 void initAddressAndPort(sockaddr_in& serverService);
 bool bindSocket(SOCKET& m_socket, sockaddr_in& serverService);
 void handleClientRequest(SOCKET& connSocket);
 bool sendMsg(SOCKET& m_socket, char sendBuff[255], sockaddr& client_addr, int& client_addr_len);
 bool reciveMsg(SOCKET& m_socket, char recvBuff[255], sockaddr& client_addr, int& client_addr_len);
+bool handleClientRequestHelper(SOCKET& connSocket, char sendBuff[255], char recvBuff[255], sockaddr client_addr, int client_addr_len);
+void requestProcessing(char recvBuff[255], char sendBuff[255]);
+void GetTimeWithoutDateInCity(char recvBuff[255], char sendBuff[255], tm *timeinfo, int userRequestedCity);
+
 
 void main()
 {
@@ -23,7 +29,7 @@ void main()
 	SOCKET m_socket;
 	sockaddr_in serverService;
 
-	if (connectiontStart(wsaData, m_socket, serverService))
+	if (connectionStart(wsaData, m_socket, serverService))
 		if (bindSocket(m_socket, serverService))
 			handleClientRequest(m_socket);
 		else
@@ -41,15 +47,129 @@ void handleClientRequest(SOCKET& connSocket)
 {
 	sockaddr client_addr;
 	int client_addr_len = sizeof(client_addr);
-	int bytesSent = 0;
 	char sendBuff[255];
 	char recvBuff[255];
 
 
-
-	cout << "[Server] Wait for clients' requests.\n";
-
+	while (true)
+	{
+		cout << "[Server] Wait for clients' requests\n";
+		handleClientRequestHelper(connSocket, sendBuff, recvBuff, client_addr, client_addr_len);
+	}
 }
+
+bool handleClientRequestHelper(SOCKET& connSocket, char sendBuff[255], char recvBuff[255], sockaddr client_addr, int client_addr_len)
+{
+	if (reciveMsg(connSocket, recvBuff, client_addr, client_addr_len))
+	{
+		requestProcessing(recvBuff, sendBuff);
+		if (!sendMsg(connSocket, sendBuff, client_addr, client_addr_len))
+			return false;
+		return true;
+	}
+	return false;
+}
+
+void requestProcessing(char recvBuff[255], char sendBuff[255])
+{
+	int userRequest;
+	int userRequestedCity;
+
+	if (strlen(recvBuff) > 2)
+	{
+		if (recvBuff[1] = ',')
+		{
+			userRequestedCity = recvBuff[2] - '0';
+			recvBuff[1] = '\0';
+		}
+		if (recvBuff[2] = ',')
+		{
+			userRequestedCity = recvBuff[3] - '0';
+			recvBuff[2] = '\0';
+		}
+	}
+
+	userRequest = atoi(recvBuff);
+	time_t timer;
+	time(&timer);
+	tm *timeinfo;
+	timeinfo = localtime(&timer);
+
+
+	switch (userRequest)
+	{
+	case 1:
+		//GetTime
+		strcpy(sendBuff, ctime(&timer));
+		sendBuff[strlen(sendBuff) - 1] = '\0';
+		break;
+	case 2:
+		//GetTimeWithoutDate 
+		strftime(sendBuff, 255, "%X", timeinfo);
+		break;
+	case 3:
+		//GetTimeSinceEpoch 
+		snprintf(sendBuff, 255, "%lld", timer);
+		break;
+	case 4:
+		//GetClientToServerDelayEstimation
+		snprintf(sendBuff, 255, "%ld", GetTickCount());
+		break;
+	case 5:
+		//MeasureRTT  
+		snprintf(sendBuff, 255, "%ld", GetTickCount());
+		break;
+	case 6:
+		//GetTimeWithoutDateOrSeconds 
+		snprintf(sendBuff, 255, "%R", timeinfo);
+		break;
+	case 7:
+		//GetYear 
+		snprintf(sendBuff, 255, "%Y", timeinfo);
+		break;
+	case 8:
+		//GetMonthAndDay  
+		snprintf(sendBuff, 255, "%d/%m", timeinfo);
+		break;
+	case 9:
+		//GetSecondsSinceBeginingOfMonth 
+		int calculate = timeinfo->tm_mday * 24 * 60 * 60;
+		calculate += timeinfo->tm_hour * 60 * 60;
+		calculate += timeinfo->tm_min * 60;
+		calculate += timeinfo->tm_sec;
+		snprintf(sendBuff, 255, "%d", calculate);
+		break;
+	case 10:
+		//GetWeekOfYear 
+		snprintf(sendBuff, 255, "%W", timeinfo);
+		break;
+	case 11:
+		//GetDaylightSavings 
+		if(timeinfo->tm_isdst > 0)
+			strcpy(sendBuff, "1");
+		else if(timeinfo->tm_isdst == 0)
+			strcpy(sendBuff, "1");
+		else
+			strcpy(sendBuff, "[No Information]");
+		break;
+	case 12:
+		//GetTimeWithoutDateInCity 
+		GetTimeWithoutDateInCity(recvBuff, sendBuff, timeinfo, userRequestedCity);
+		break;
+	case 13:
+		//MeasureTimeLap 
+
+		break;
+	default:
+		break;
+	}
+}
+
+void GetTimeWithoutDateInCity(char recvBuff[255], char sendBuff[255], tm *timeinfo, int userRequestedCity)
+{
+	if()
+}
+
 
 
 bool initWinSocket(WSAData& wsaData)
@@ -62,7 +182,7 @@ bool initWinSocket(WSAData& wsaData)
 	return true;
 }
 
-bool connectStart(WSAData& wsaData, SOCKET& connSocket, sockaddr_in& server)
+bool connectionStart(WSAData& wsaData, SOCKET& connSocket, sockaddr_in& server)
 {
 	if (initWinSocket(wsaData) && socketStart(connSocket))
 	{
