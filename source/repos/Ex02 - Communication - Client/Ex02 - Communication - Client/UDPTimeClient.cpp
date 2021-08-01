@@ -18,6 +18,9 @@ void handleUserRequest(SOCKET& connSocket, sockaddr_in& server);
 bool GetClientToServerDelayEstimation(SOCKET& connSocket, char sendBuff[255], char reciveBuff[255], sockaddr_in& server);
 int getChoiceFromUser();
 void showMenu();
+int getCityNumberFromUser();
+float getAvgTS(DWORD reciveLong[], int reciveLen);
+
 
 void main()
 {
@@ -50,7 +53,14 @@ void handleUserRequest(SOCKET& connSocket, sockaddr_in& server)
 		}
 		else
 		{
-			snprintf(sendBuff, 255, "%d", userChoice);
+			if (userChoice == 12)
+			{
+				int cityNumberFromUser = getCityNumberFromUser();
+				snprintf(sendBuff, 255, "%d,%d", userChoice, cityNumberFromUser);
+			}
+			else
+				snprintf(sendBuff, 255, "%d", userChoice);
+
 			if (userChoice == 4)
 			{
 				if (!GetClientToServerDelayEstimation(connSocket, sendBuff, recvBuff, server))
@@ -69,6 +79,34 @@ void handleUserRequest(SOCKET& connSocket, sockaddr_in& server)
 	}
 }
 
+
+int getCityNumberFromUser()
+{
+	int userInput;
+	char dummyCity[255];
+
+	cout << "Please select one of the cities" << endl;
+	cout << "1.  Tokyo, Japan" << endl;
+	cout << "2.  Melbourne, Australia" << endl;
+	cout << "3.  San Francisco, USA" << endl;
+	cout << "4.  Porto, Portugal" << endl;
+	cout << "5.  Other. Please Enter The Requested City:" << endl;
+
+	while (true)
+	{
+		cin >> userInput;
+		if (userInput >= 1 && userInput <= 5)
+		{
+			if (userInput == 5)
+				cin >> dummyCity;
+			break;
+		}
+		else
+			cout << "Client: Invalid Parameter Value. Please Enter Value in 1-5 Range" << endl;
+	}
+	return userInput;
+
+}
 
 bool initWinSocket(WSAData& wsaData)
 {
@@ -207,8 +245,8 @@ void showMenu()
 	cout << "9.  Get Seconds Since Begining Of Month" << endl;
 	cout << "10. Get Week Of Year" << endl;
 	cout << "11. Get Daylight Savings" << endl;
-	cout << "12. Get Time Without Date In City " << endl;
-	cout << "13. Measure Time Lap " << endl;
+	cout << "12. Get Time Without Date In City" << endl;
+	cout << "13. Measure Time Lap" << endl;
 	cout << "0.  Quit" << endl;
 	cout << "---> Please Enter Your Choice <---" << endl;
 }
