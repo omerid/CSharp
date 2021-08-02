@@ -18,7 +18,7 @@ bool bindSocket(SOCKET& m_socket, sockaddr_in& serverService);
 void handleClientRequest(SOCKET& connSocket);
 bool sendMsg(SOCKET& m_socket, char sendBuff[255], sockaddr& client_addr, int& client_addr_len);
 bool reciveMsg(SOCKET& m_socket, char recvBuff[255], sockaddr& client_addr, int& client_addr_len);
-bool handleClientRequestHelper(SOCKET& connSocket, char sendBuff[255], char recvBuff[255], sockaddr client_addr, int client_addr_len);
+bool handleClientRequestHelper(SOCKET& connSocket, char sendBuff[255], char recvBuff[255], sockaddr &client_addr, int client_addr_len);
 void requestProcessing(char recvBuff[255], char sendBuff[255]);
 void GetTimeWithoutDateInCity(char recvBuff[255], char sendBuff[255], tm *timeinfo, int userRequestedCity);
 
@@ -58,7 +58,7 @@ void handleClientRequest(SOCKET& connSocket)
 	}
 }
 
-bool handleClientRequestHelper(SOCKET& connSocket, char sendBuff[255], char recvBuff[255], sockaddr client_addr, int client_addr_len)
+bool handleClientRequestHelper(SOCKET& connSocket, char sendBuff[255], char recvBuff[255], sockaddr &client_addr, int client_addr_len)
 {
 	if (reciveMsg(connSocket, recvBuff, client_addr, client_addr_len))
 	{
@@ -94,7 +94,7 @@ void requestProcessing(char recvBuff[255], char sendBuff[255])
 	time(&timer);
 	tm *timeinfo;
 	timeinfo = localtime(&timer);
-
+	int calculate;
 
 	switch (userRequest)
 	{
@@ -121,19 +121,19 @@ void requestProcessing(char recvBuff[255], char sendBuff[255])
 		break;
 	case 6:
 		//GetTimeWithoutDateOrSeconds 
-		snprintf(sendBuff, 255, "%R", timeinfo);
+		strftime(sendBuff, 255, "%R", timeinfo);
 		break;
 	case 7:
 		//GetYear 
-		snprintf(sendBuff, 255, "%Y", timeinfo);
+		strftime(sendBuff, 255, "%Y", timeinfo);
 		break;
 	case 8:
 		//GetMonthAndDay  
-		snprintf(sendBuff, 255, "%d/%m", timeinfo);
+		strftime(sendBuff, 255, "%d/%m", timeinfo);
 		break;
 	case 9:
 		//GetSecondsSinceBeginingOfMonth 
-		int calculate = timeinfo->tm_mday * 24 * 60 * 60;
+		calculate = timeinfo->tm_mday * 24 * 60 * 60;
 		calculate += timeinfo->tm_hour * 60 * 60;
 		calculate += timeinfo->tm_min * 60;
 		calculate += timeinfo->tm_sec;
@@ -141,7 +141,7 @@ void requestProcessing(char recvBuff[255], char sendBuff[255])
 		break;
 	case 10:
 		//GetWeekOfYear 
-		snprintf(sendBuff, 255, "%W", timeinfo);
+		strftime(sendBuff, 255, "%W", timeinfo);
 		break;
 	case 11:
 		//GetDaylightSavings 
@@ -167,7 +167,10 @@ void requestProcessing(char recvBuff[255], char sendBuff[255])
 
 void GetTimeWithoutDateInCity(char recvBuff[255], char sendBuff[255], tm *timeinfo, int userRequestedCity)
 {
-	if()
+	if (true)
+	{
+
+	}
 }
 
 
@@ -230,14 +233,6 @@ bool bindSocket(SOCKET& m_socket, sockaddr_in& serverService)
 bool sendMsg(SOCKET& m_socket, char sendBuff[255], sockaddr& client_addr, int& client_addr_len)
 {
 
-	time_t timer;
-	time(&timer);
-	// Parse the current time to printable string.
-	strcpy(sendBuff, ctime(&timer));
-	sendBuff[strlen(sendBuff) - 1] = '\0'; //to remove the new-line from the created string
-
-	// Sends the answer to the client, using the client address gathered
-	// by recvfrom. 
 	int bytesSent = sendto(m_socket, sendBuff, (int)strlen(sendBuff), 0, (const sockaddr *)&client_addr, client_addr_len);
 	if (SOCKET_ERROR == bytesSent)
 	{
@@ -266,3 +261,4 @@ bool reciveMsg(SOCKET& m_socket, char recvBuff[255], sockaddr& client_addr, int&
 	cout << "[Server] Recieved: " << bytesRecv << " bytes of \"" << recvBuff << "\" message.\n";
 	return true;
 }
+
