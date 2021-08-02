@@ -8,19 +8,19 @@ using namespace std;
 
 #define TIME_PORT	27015
 
-bool initWinSocket(WSAData& wsaData);
-bool connectiontStart(WSAData& wsaData, SOCKET& connSocket, sockaddr_in& server);
-bool socketStart(SOCKET& connSocket);
-void initAddressAndPort(sockaddr_in& server);
-bool sendMsg(SOCKET& connSocket, char sendBuff[255], sockaddr_in& server);
-bool reciveMsg(SOCKET& connSocket, char reciveBuff[255]);
-void handleUserRequest(SOCKET& connSocket, sockaddr_in& server);
-bool GetClientToServerDelayEstimation(SOCKET& connSocket, char sendBuff[255], char reciveBuff[255], sockaddr_in& server);
-int getChoiceFromUser();
-void showMenu();
-int getCityNumberFromUser();
+bool  initWinSocket(WSAData& wsaData);
+bool  connectiontStart(WSAData& wsaData, SOCKET& connSocket, sockaddr_in& server);
+bool  socketStart(SOCKET& connSocket);
+void  initAddressAndPort(sockaddr_in& server);
+bool  sendMsg(SOCKET& connSocket, char sendBuff[255], sockaddr_in& server);
+bool  reciveMsg(SOCKET& connSocket, char reciveBuff[255]);
+void  handleUserRequest(SOCKET& connSocket, sockaddr_in& server);
+bool  GetClientToServerDelayEstimation(SOCKET& connSocket, char sendBuff[255], char reciveBuff[255], sockaddr_in& server);
+int   getChoiceFromUser();
+void  showMenu();
+int   getCityNumberFromUser();
 float getAvgTS(DWORD reciveLong[], int reciveLen);
-
+bool  measureRTT(char sendBuff[255], char recvBuff[255], SOCKET& connSocket, sockaddr_in& server);
 
 void main()
 {
@@ -68,7 +68,8 @@ void handleUserRequest(SOCKET& connSocket, sockaddr_in& server)
 			}
 			else if (userChoice == 5)
 			{
-
+				if (!measureRTT(sendBuff, recvBuff, connSocket, server))
+					break;
 			}
 			else
 			{
@@ -136,7 +137,7 @@ bool socketStart(SOCKET& connSocket)
 	connSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (INVALID_SOCKET == connSocket)
 	{
-		cout << "Time Client: Error at socket(): " << WSAGetLastError() << endl;
+		cout << "[Client] Error at socket(): " << WSAGetLastError() << endl;
 		WSACleanup();
 		return false;
 	}
@@ -156,12 +157,12 @@ bool sendMsg(SOCKET& connSocket, char sendBuff[255], sockaddr_in& server)
 	int bytesSent = sendto(connSocket, sendBuff, (int)strlen(sendBuff), 0, (const sockaddr *)&server, sizeof(server));
 	if (SOCKET_ERROR == bytesSent)
 	{
-		cout << "Time Client: Error at sendto(): " << WSAGetLastError() << endl;
+		cout << "[Client] Error at sendto(): " << WSAGetLastError() << endl;
 		closesocket(connSocket);
 		WSACleanup();
 		return false;
 	}
-	cout << "Time Client: Sent: " << bytesSent << "/" << strlen(sendBuff) << " bytes of \"" << sendBuff << "\" message.\n";
+	cout << "[Client] Sent: " << bytesSent << "/" << strlen(sendBuff) << " bytes of \"" << sendBuff << "\" message.\n";
 	return true;
 }
 
@@ -170,13 +171,13 @@ bool reciveMsg(SOCKET& connSocket, char reciveBuff[255])
 	int bytesRecv = recv(connSocket, reciveBuff, 255, 0);
 	if (SOCKET_ERROR == bytesRecv)
 	{
-		cout << "Time Client: Error at recv(): " << WSAGetLastError() << endl;
+		cout << "[Client] Error at recv(): " << WSAGetLastError() << endl;
 		closesocket(connSocket);
 		WSACleanup();
 		return false;
 	}
 	reciveBuff[bytesRecv] = '\0'; 
-	cout << "Time Client: Recieved: " << bytesRecv << " bytes of \"" << reciveBuff << "\" message." << endl;
+	cout << "[Time Client] Recieved: " << bytesRecv << " bytes of \"" << reciveBuff << "\" message." << endl;
 	return true;
 }
 
@@ -202,6 +203,32 @@ bool GetClientToServerDelayEstimation(SOCKET& connSocket, char sendBuff[255], ch
 	return true;
 }
 
+
+bool measureRTT(char sendBuff[255], char recvBuff[255], SOCKET& connSocket, sockaddr_in& server)
+{
+	DWORD sum = 0;
+	DWORD recvClickCounter;
+	DWORD sendClickCounter;
+
+	for (int i = 0; i < 100; i++)
+	{
+		sendClickCounter = GetTickCount();
+		if(sendMsg(connSocket, sendBuff, server))
+		{
+			if (!reciveMsg(connSocket, recvBuff))
+				return false;
+		}
+		else
+			return false;
+
+		recvClickCounter = GetTickCount();
+		sum += (recvClickCounter - sendClickCounter);
+	}
+
+		cout << "Time Client: Measure RTT: " << (sum) / 100 << " milliseconds" << endl;
+	return true;
+}
+
 float getAvgTS(DWORD reciveLong[], int reciveLen)
 {
 	float avg = 0;
@@ -224,7 +251,7 @@ int getChoiceFromUser()
 		if (inputFromUser >= 0 && inputFromUser <= 13)
 			break;
 		else
-			cout << "Client: Invalid Parameter Value. Please Enter Value in 0-13 Range" << endl;
+			cout << "[Client] Invalid Parameter Value. Please Enter Value in 0-13 Range" << endl;
 	}
 	return inputFromUser;
 }
