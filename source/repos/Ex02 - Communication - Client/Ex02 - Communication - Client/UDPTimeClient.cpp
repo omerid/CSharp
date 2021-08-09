@@ -5,7 +5,6 @@ using namespace std;
 #include <winsock2.h> 
 #include <string.h>
 
-
 #define TIME_PORT	27015
 
 bool  initWinSocket(WSAData& wsaData);
@@ -110,7 +109,6 @@ int getCityNumberFromUser()
 			cout << "[Client] Invalid Parameter Value. Please Enter Value in 1-5 Range" << endl;
 	}
 	return userInput;
-
 }
 
 bool initWinSocket(WSAData& wsaData)
@@ -122,7 +120,6 @@ bool initWinSocket(WSAData& wsaData)
 	}
 	else
 		return true;
-		
 }
 
 bool connectiontStart(WSAData& wsaData, SOCKET& connSocket, sockaddr_in& server)
@@ -181,7 +178,7 @@ bool reciveMsg(SOCKET& connSocket, char reciveBuff[255])
 		return false;
 	}
 	reciveBuff[bytesRecv] = '\0'; 
-	cout << "[Time Client] Recieved: " << bytesRecv << " bytes of \"" << reciveBuff << "\" message." << endl;
+	cout << "[Client] Recieved: " << bytesRecv << " bytes of \"" << reciveBuff << "\" message." << endl;
 	return true;
 }
 
@@ -206,7 +203,6 @@ bool GetClientToServerDelayEstimation(SOCKET& connSocket, char sendBuff[255], ch
 	cout << "[Client] The Delay is: " << averageTimeStamp << "ms" << endl;
 	return true;
 }
-
 
 bool measureRTT(char sendBuff[255], char recvBuff[255], SOCKET& connSocket, sockaddr_in& server)
 {
