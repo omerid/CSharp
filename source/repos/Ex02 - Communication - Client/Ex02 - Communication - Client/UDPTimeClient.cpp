@@ -1,152 +1,174 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-#include <iostream>
-using namespace std;
 #pragma comment(lib, "Ws2_32.lib")
-#include <winsock2.h> 
+#include <iostream>
 #include <string.h>
+#include <winsock2.h> 
+using namespace std;
+
 
 #define TIME_PORT	27015
 
 bool  initWinSocket(WSAData& wsaData);
-bool  connectiontStart(WSAData& wsaData, SOCKET& connSocket, sockaddr_in& server);
-bool  socketStart(SOCKET& connSocket);
-void  initAddressAndPort(sockaddr_in& server);
+bool  connectiontStart(WSAData& wsaData, SOCKET& m_socket, sockaddr_in& server);
 bool  sendMsg(SOCKET& connSocket, char sendBuff[255], sockaddr_in& server);
+void  initAddPort(sockaddr_in& server);
+bool  startSocket(SOCKET& connSocket);
 bool  reciveMsg(SOCKET& connSocket, char reciveBuff[255]);
-void  handleUserRequest(SOCKET& connSocket, sockaddr_in& server);
 bool  GetClientToServerDelayEstimation(SOCKET& connSocket, char sendBuff[255], char reciveBuff[255], sockaddr_in& server);
-int   getChoiceFromUser();
-void  showMenu();
-int   getCityNumberFromUser();
-float getAvgTS(DWORD reciveLong[], int reciveLen);
 bool  measureRTT(char sendBuff[255], char recvBuff[255], SOCKET& connSocket, sockaddr_in& server);
+void  handleRequests(SOCKET& connSocket, sockaddr_in& server);
+void  menu();
+void  showCities();
+void  closeCommunication(SOCKET &m_Socket);
+bool  inputValidator(int numberToValid);
+int   getChoiceFromUser();
+int   getCityNumberFromUser();
+
 
 void main()
 {
 	WSAData wsaData;
-	SOCKET connSocket;
+	SOCKET m_Socket;
 	sockaddr_in server;
 
-	if (connectiontStart(wsaData, connSocket, server))
-		handleUserRequest(connSocket, server);
-	else
-		cout << "[Client] Some Error Occurred.\n";
-	
-	cout << "[Client] Closing Connection.\n";
-	closesocket(connSocket);
+	initWinSocket(wsaData);
+
+	if (!connectiontStart(wsaData, m_Socket, server))
+		return;
+
+	handleRequests(m_Socket, server);
+
+	closeCommunication(m_Socket);
 
 	system("pause");
+
 }
 
-void handleUserRequest(SOCKET& connSocket, sockaddr_in& server)
+void closeCommunication(SOCKET &m_Socket)
+{
+	cout << "Time Client: Closing Connection.\n";
+	closesocket(m_Socket);
+}
+
+void handleRequests(SOCKET& connSocket, sockaddr_in& server)
 {
 	char sendBuff[255];
 	char recvBuff[255];
-	int userChoice;
+	int choiceFromUser;
 
-	while (true)
+	while (1)
 	{
-		if ((userChoice = getChoiceFromUser()) == 0)
-		{
-			cout << "[Client] Quit Request Was Processed" << endl;
-			break;
-		}
+		choiceFromUser = getChoiceFromUser();
+
+		if (choiceFromUser == 0)
+			cout << "Time Client: Quit request" << endl;
+		
 		else
 		{
-			if (userChoice == 12)
+			if (choiceFromUser == 12)
 			{
 				int cityNumberFromUser = getCityNumberFromUser();
-				snprintf(sendBuff, 255, "%d,%d", userChoice, cityNumberFromUser);
+				snprintf(sendBuff, 255, "%d,%d", cityNumberFromUser, choiceFromUser);
 			}
 			else
-				snprintf(sendBuff, 255, "%d", userChoice);
+				snprintf(sendBuff, 255, "%d", choiceFromUser);
 
-			if (userChoice == 4)
+			if (choiceFromUser == 4)
 			{
-				if (!GetClientToServerDelayEstimation(connSocket, sendBuff, recvBuff, server))
+				if (GetClientToServerDelayEstimation(connSocket, sendBuff, recvBuff, server) == false)
 					break;
 			}
-			else if (userChoice == 5)
+			else if (choiceFromUser == 5)
 			{
-				if (!measureRTT(sendBuff, recvBuff, connSocket, server))
+				if (measureRTT(sendBuff, recvBuff, connSocket, server) == false)
 					break;
 			}
 			else
 			{
-				if (!sendMsg(connSocket, sendBuff, server) || !reciveMsg(connSocket, recvBuff))
+				if (sendMsg(connSocket, sendBuff, server) == false || reciveMsg(connSocket, recvBuff) == false)
 					break;
 			}
 		}
+
+		cout  << endl;
+
 	}
 }
 
 int getCityNumberFromUser()
 {
-	int userInput;
-	char dummyCity[255];
+	int input;
+	char city[255];
 
-	cout << "Please select one of the cities" << endl;
+	showCities();
+
+	while (1)
+	{
+		cin >> input;
+		if (inputValidator(input))
+		{
+			if (input == 5)
+			{
+				cout << "Please Enter The Requested City:" << endl;
+				cin >> city;
+			}
+			break;
+		}
+		else
+			cout << "Time Client: Invalid. Please enter this values: 1-5" << endl;
+	}
+	return input;
+}
+
+void showCities()
+{
+	cout << "Please select one city" << endl;
 	cout << "1.  Tokyo, Japan" << endl;
 	cout << "2.  Melbourne, Australia" << endl;
 	cout << "3.  San Francisco, USA" << endl;
 	cout << "4.  Porto, Portugal" << endl;
 	cout << "5.  Other" << endl;
+}
 
-	while (true)
-	{
-		cin >> userInput;
-		if (userInput >= 1 && userInput <= 5)
-		{
-			if (userInput == 5)
-			{
-				cout << "Please Enter The Requested City:" << endl;
-				cin >> dummyCity;
-			}
-
-			break;
-		}
-		else
-			cout << "[Client] Invalid Parameter Value. Please Enter Value in 1-5 Range" << endl;
-	}
-	return userInput;
+bool inputValidator(int numberToValid)
+{
+	return numberToValid >= 1 && numberToValid <= 5;
 }
 
 bool initWinSocket(WSAData& wsaData)
 {
 	if (NO_ERROR != WSAStartup(MAKEWORD(2, 2), &wsaData))
 	{
-		cout << "[Client] Error at WSAStartup()\n";
+		cout << "Time Client: Error at WSAStartup()\n";
 		return false;
 	}
 	else
 		return true;
 }
 
-bool connectiontStart(WSAData& wsaData, SOCKET& connSocket, sockaddr_in& server)
+bool connectiontStart(WSAData& wsaData, SOCKET& m_socket, sockaddr_in& server)
 {
-	if (initWinSocket(wsaData) && socketStart(connSocket))
-	{
-		initAddressAndPort(server);
-		return true;
-	}
-	else
+	initWinSocket(wsaData);
+	if (!startSocket(m_socket))
 		return false;
+	initAddPort(server);
+	return true;
 }
 
-bool socketStart(SOCKET& connSocket)
+bool startSocket(SOCKET& connSocket)
 {
 	connSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (INVALID_SOCKET == connSocket)
 	{
-		cout << "[Client] Error at socket(): " << WSAGetLastError() << endl;
+		cout << "Time Client: Error at socket(): " << WSAGetLastError() << endl;
 		WSACleanup();
 		return false;
 	}
-	else
-		return true;
+	
+	return true;
 }
 
-void initAddressAndPort(sockaddr_in& server)
+void initAddPort(sockaddr_in& server)
 {
 	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = inet_addr("127.0.0.1");
@@ -158,12 +180,12 @@ bool sendMsg(SOCKET& connSocket, char sendBuff[255], sockaddr_in& server)
 	int bytesSent = sendto(connSocket, sendBuff, (int)strlen(sendBuff), 0, (const sockaddr *)&server, sizeof(server));
 	if (SOCKET_ERROR == bytesSent)
 	{
-		cout << "[Client] Error at sendto(): " << WSAGetLastError() << endl;
+		cout << "Time Client: Error at sendto(): " << WSAGetLastError() << endl;
 		closesocket(connSocket);
 		WSACleanup();
 		return false;
 	}
-	cout << "[Client] Sent: " << bytesSent << "/" << strlen(sendBuff) << " bytes of \"" << sendBuff << "\" message.\n";
+	cout << "Time Client: Sent: " << bytesSent << "/" << strlen(sendBuff) << " bytes of \"" << sendBuff << "\" message.\n";
 	return true;
 }
 
@@ -172,36 +194,38 @@ bool reciveMsg(SOCKET& connSocket, char reciveBuff[255])
 	int bytesRecv = recv(connSocket, reciveBuff, 255, 0);
 	if (SOCKET_ERROR == bytesRecv)
 	{
-		cout << "[Client] Error at recv(): " << WSAGetLastError() << endl;
+		cout << "Time Client: Error at recv(): " << WSAGetLastError() << endl;
 		closesocket(connSocket);
 		WSACleanup();
 		return false;
 	}
 	reciveBuff[bytesRecv] = '\0'; 
-	cout << "[Client] Recieved: " << bytesRecv << " bytes of \"" << reciveBuff << "\" message." << endl;
+	cout << "Time Client: Recieved: " << bytesRecv << " bytes of \"" << reciveBuff << "\" message." << endl;
 	return true;
 }
 
 bool GetClientToServerDelayEstimation(SOCKET& connSocket, char sendBuff[255], char reciveBuff[255], sockaddr_in& server)
 {
 	DWORD reciveLong[100];
+	bool error = false;
 
-	for (size_t i = 0; i < 100; i++)
+	for (int i = 0; i < 100; i++)
+		if (sendMsg(connSocket, sendBuff, server) == false)
+			error = true;
+
+	for (int i = 0; i < 100; i++)
 	{
-		if (!sendMsg(connSocket, sendBuff, server))
-			return false;
-	}
-	for (size_t i = 0; i < 100; i++)
-	{
-		if (!reciveMsg(connSocket, reciveBuff))
-			return false;
-		reciveLong[i] = atol(reciveBuff); // GetTickCount return DWORD value, which is LONG (4 bytes, 32 bits)
+		if (reciveMsg(connSocket, reciveBuff) == false)
+			error = true;
+		reciveLong[i] = atol(reciveBuff); 
 	}
 
-	float averageTimeStamp = getAvgTS(reciveLong, 100);
+	float avg = 0;
+	for (int i = 1; i < 100; i++)
+		avg = avg + reciveLong[i] - reciveLong[i - 1];
 
-	cout << "[Client] The Delay is: " << averageTimeStamp << "ms" << endl;
-	return true;
+	cout << "Time Client: The Delay is: " << avg/100 << "Milliseconds" << endl;
+	return !error;
 }
 
 bool measureRTT(char sendBuff[255], char recvBuff[255], SOCKET& connSocket, sockaddr_in& server)
@@ -209,58 +233,42 @@ bool measureRTT(char sendBuff[255], char recvBuff[255], SOCKET& connSocket, sock
 	DWORD sum = 0;
 	DWORD recvClickCounter;
 	DWORD sendClickCounter;
+	bool error = false;
 
 	for (int i = 0; i < 100; i++)
 	{
 		sendClickCounter = GetTickCount();
 		if(sendMsg(connSocket, sendBuff, server))
-		{
-			if (!reciveMsg(connSocket, recvBuff))
-				return false;
-		}
-		else
-			return false;
+			if (reciveMsg(connSocket, recvBuff) == false)
+				error = true;
 
 		recvClickCounter = GetTickCount();
 		sum += (recvClickCounter - sendClickCounter);
 	}
 
-		cout << "[Client] Measure RTT: " << (sum) / 100 << " milliseconds" << endl;
-	return true;
-}
-
-float getAvgTS(DWORD reciveLong[], int reciveLen)
-{
-	float avg = 0;
-	for (size_t i = 1; i < reciveLen; i++)
-	{
-		avg = avg + reciveLong[i] - reciveLong[i - 1];
-	}
-	avg - avg - reciveLen;
-	return avg;
+		cout << "Time Client: Measure RTT: " << (sum) / 100 << " milliseconds" << endl;
+	return !error;
 }
 
 int getChoiceFromUser() 
 {
-	showMenu();
-	int inputFromUser;
+	menu();
+	int input;
 
 	while (true)
 	{
-		cin >> inputFromUser;
-		if (inputFromUser >= 0 && inputFromUser <= 13)
+		cin >> input;
+		if (input >= 0 && input <= 13)
 			break;
 		else
-			cout << "[Client] Invalid Parameter Value. Please Enter Value in 0-13 Range" << endl;
+			cout << "Time Client: Invalid input. Please enter value in 0-13 range" << endl;
 	}
-	return inputFromUser;
+	return input;
 }
 
-void showMenu() 
+void menu() 
 {
-	cout << "==========================================" << endl;
-	cout << "||             Client Menu              ||" << endl;
-	cout << "==========================================" << endl;
+	cout << "    Client Menu:" << endl;
 	cout << "1.  Get Time" << endl;
 	cout << "2.  Get Time Without Date" << endl;
 	cout << "3.  Get Time Since Epoch" << endl;
@@ -275,5 +283,5 @@ void showMenu()
 	cout << "12. Get Time Without Date In City" << endl;
 	cout << "13. Measure Time Lap" << endl;
 	cout << "0.  Quit" << endl;
-	cout << "---> Please Enter Your Choice <---" << endl;
+	cout << "Enter Your Choice: " << endl;
 }
