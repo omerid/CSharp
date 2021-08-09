@@ -7,8 +7,22 @@ using namespace std;
 #include <time.h>
 #include <ctime>
 
+#define TOKYO	1
+#define MELBOURNE	2
+#define SAN_FRANCISCO	3
+#define PORTO	4
+#define OTHER	5
+#define JST 9
+#define AEST 10
+#define PDT -7
+#define WEST 1
+#define THREE_MINUTES 180 // 180 Seconds == 3 Minutes
 
 #define TIME_PORT	27015
+
+clock_t startTime;
+clock_t endTime;
+bool timerOn = false;
 
 bool initWinSocket(WSAData& wsaData);
 bool connectionStart(WSAData& wsaData, SOCKET& connSocket, sockaddr_in& server);
@@ -20,8 +34,9 @@ bool sendMsg(SOCKET& m_socket, char sendBuff[255], sockaddr& client_addr, int& c
 bool reciveMsg(SOCKET& m_socket, char recvBuff[255], sockaddr& client_addr, int& client_addr_len);
 bool handleClientRequestHelper(SOCKET& connSocket, char sendBuff[255], char recvBuff[255], sockaddr &client_addr, int client_addr_len);
 void requestProcessing(char recvBuff[255], char sendBuff[255]);
-void GetTimeWithoutDateInCity(char recvBuff[255], char sendBuff[255], tm *timeinfo, int userRequestedCity);
-
+void GetTimeWithoutDateInCity(char recvBuff[255], char sendBuff[255], int userRequestedCity);
+void measureTimeLap(char recvBuff[255], char sendBuff[255]);
+void checkTheTimer();
 
 void main()
 {
@@ -32,13 +47,9 @@ void main()
 	if (connectionStart(wsaData, m_socket, serverService))
 		if (bindSocket(m_socket, serverService))
 			handleClientRequest(m_socket);
-		else
-			return;
-	else
-		return;
-	
+		
 	// Closing connections and Winsock.
-	cout << "Time Server: Closing Connection.\n";
+	cout << "[Server] Some Error Occurred - Closing Connection.\n";
 	closesocket(m_socket);
 	WSACleanup();
 }
@@ -49,7 +60,6 @@ void handleClientRequest(SOCKET& connSocket)
 	int client_addr_len = sizeof(client_addr);
 	char sendBuff[255];
 	char recvBuff[255];
-
 
 	while (true)
 	{
@@ -75,14 +85,16 @@ void requestProcessing(char recvBuff[255], char sendBuff[255])
 	int userRequest;
 	int userRequestedCity;
 
+	checkTheTimer();
+
 	if (strlen(recvBuff) > 2)
 	{
-		if (recvBuff[1] = ',')
+		if (recvBuff[1] == ',')
 		{
 			userRequestedCity = recvBuff[2] - '0';
 			recvBuff[1] = '\0';
 		}
-		if (recvBuff[2] = ',')
+		if (recvBuff[2] == ',')
 		{
 			userRequestedCity = recvBuff[3] - '0';
 			recvBuff[2] = '\0';
@@ -154,26 +166,76 @@ void requestProcessing(char recvBuff[255], char sendBuff[255])
 		break;
 	case 12:
 		//GetTimeWithoutDateInCity 
-		GetTimeWithoutDateInCity(recvBuff, sendBuff, timeinfo, userRequestedCity);
+		GetTimeWithoutDateInCity(recvBuff, sendBuff, userRequestedCity);
 		break;
 	case 13:
 		//MeasureTimeLap 
-
+		measureTimeLap(recvBuff, sendBuff);
 		break;
 	default:
 		break;
 	}
 }
 
-void GetTimeWithoutDateInCity(char recvBuff[255], char sendBuff[255], tm *timeinfo, int userRequestedCity)
+void checkTheTimer()
 {
-	if (true)
+	if (timerOn)
 	{
-
+		clock_t checkTimer = clock();
+		clock_t clockTicksTaken = checkTimer - startTime;
+		double timeInSeconds = clockTicksTaken / (double)CLOCKS_PER_SEC;
+		if (timeInSeconds > THREE_MINUTES)
+			timerOn = false;
 	}
 }
 
+void measureTimeLap(char recvBuff[255], char sendBuff[255])
+{
+	if (timerOn)
+	{
+		endTime = clock();
+		clock_t clockTicksTaken = endTime - startTime;
+		double timeInSeconds = clockTicksTaken / (double)CLOCKS_PER_SEC;
+		snprintf(sendBuff, 255, "%lf seconds", timeInSeconds);
+		timerOn = false;
+	}
+	else
+	{
+		strcpy(sendBuff, "Start measure lap time");
+		startTime = clock();
+		timerOn = true;
+	}
+}
 
+void GetTimeWithoutDateInCity(char recvBuff[255], char sendBuff[255], int userRequestedCity)
+{
+	time_t rawtime;
+	struct tm * ptm;
+
+	time(&rawtime);
+	ptm = gmtime(&rawtime);
+
+	switch (userRequestedCity)
+	{
+	case TOKYO:
+		snprintf(sendBuff, 255, "%2d:%02d:%02d", (ptm->tm_hour+ JST)%24, ptm->tm_min, ptm->tm_sec);
+		break;
+	case MELBOURNE:
+		snprintf(sendBuff, 255, "%2d:%02d:%02d", (ptm->tm_hour + AEST) % 24, ptm->tm_min, ptm->tm_sec);
+		break;
+	case SAN_FRANCISCO:
+		snprintf(sendBuff, 255, "%2d:%02d:%02d", (ptm->tm_hour + PDT) % 24, ptm->tm_min, ptm->tm_sec);
+		break;
+	case PORTO:
+		snprintf(sendBuff, 255, "%2d:%02d:%02d", (ptm->tm_hour + WEST) % 24, ptm->tm_min, ptm->tm_sec);
+		break;
+	case OTHER:
+		snprintf(sendBuff, 255, "%2d:%02d:%02d", ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
+		break;
+	default:
+		break;
+	}
+}
 
 bool initWinSocket(WSAData& wsaData)
 {
@@ -196,13 +258,12 @@ bool connectionStart(WSAData& wsaData, SOCKET& connSocket, sockaddr_in& server)
 		return false;
 }
 
-
 bool socketStart(SOCKET& m_socket)
 {
 	m_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (INVALID_SOCKET == m_socket)
 	{
-		cout << "Time Client: Error at recv(): " << WSAGetLastError() << endl;
+		cout << "[Server]: Error at recv(): " << WSAGetLastError() << endl;
 
 		WSACleanup();
 		return false;
@@ -236,7 +297,7 @@ bool sendMsg(SOCKET& m_socket, char sendBuff[255], sockaddr& client_addr, int& c
 	int bytesSent = sendto(m_socket, sendBuff, (int)strlen(sendBuff), 0, (const sockaddr *)&client_addr, client_addr_len);
 	if (SOCKET_ERROR == bytesSent)
 	{
-		cout << "Time Server: Error at sendto(): " << WSAGetLastError() << endl;
+		cout << "[Server] Error at sendto(): " << WSAGetLastError() << endl;
 		closesocket(m_socket);
 		WSACleanup();
 		return false;
@@ -251,7 +312,7 @@ bool reciveMsg(SOCKET& m_socket, char recvBuff[255], sockaddr& client_addr, int&
 	int bytesRecv = bytesRecv = recvfrom(m_socket, recvBuff, 255, 0, &client_addr, &client_addr_len);
 	if (SOCKET_ERROR == bytesRecv)
 	{
-		cout << "Time Server: Error at recvfrom(): " << WSAGetLastError() << endl;
+		cout << "[Server] Error at recvfrom(): " << WSAGetLastError() << endl;
 		closesocket(m_socket);
 		WSACleanup();
 		return false;
@@ -261,4 +322,3 @@ bool reciveMsg(SOCKET& m_socket, char recvBuff[255], sockaddr& client_addr, int&
 	cout << "[Server] Recieved: " << bytesRecv << " bytes of \"" << recvBuff << "\" message.\n";
 	return true;
 }
-

@@ -30,9 +30,10 @@ void main()
 
 	if (connectiontStart(wsaData, connSocket, server))
 		handleUserRequest(connSocket, server);
-	else return;
+	else
+		cout << "[Client] Some Error Occurred.\n";
 	
-	cout << "Time Client: Closing Connection.\n";
+	cout << "[Client] Closing Connection.\n";
 	closesocket(connSocket);
 
 	system("pause");
@@ -48,7 +49,7 @@ void handleUserRequest(SOCKET& connSocket, sockaddr_in& server)
 	{
 		if ((userChoice = getChoiceFromUser()) == 0)
 		{
-			cout << "Client: Quit Request Was Processed" << endl;
+			cout << "[Client] Quit Request Was Processed" << endl;
 			break;
 		}
 		else
@@ -80,7 +81,6 @@ void handleUserRequest(SOCKET& connSocket, sockaddr_in& server)
 	}
 }
 
-
 int getCityNumberFromUser()
 {
 	int userInput;
@@ -91,7 +91,7 @@ int getCityNumberFromUser()
 	cout << "2.  Melbourne, Australia" << endl;
 	cout << "3.  San Francisco, USA" << endl;
 	cout << "4.  Porto, Portugal" << endl;
-	cout << "5.  Other. Please Enter The Requested City:" << endl;
+	cout << "5.  Other" << endl;
 
 	while (true)
 	{
@@ -99,11 +99,15 @@ int getCityNumberFromUser()
 		if (userInput >= 1 && userInput <= 5)
 		{
 			if (userInput == 5)
+			{
+				cout << "Please Enter The Requested City:" << endl;
 				cin >> dummyCity;
+			}
+
 			break;
 		}
 		else
-			cout << "Client: Invalid Parameter Value. Please Enter Value in 1-5 Range" << endl;
+			cout << "[Client] Invalid Parameter Value. Please Enter Value in 1-5 Range" << endl;
 	}
 	return userInput;
 
@@ -113,7 +117,7 @@ bool initWinSocket(WSAData& wsaData)
 {
 	if (NO_ERROR != WSAStartup(MAKEWORD(2, 2), &wsaData))
 	{
-		cout << "Time Client: Error at WSAStartup()\n";
+		cout << "[Client] Error at WSAStartup()\n";
 		return false;
 	}
 	else
@@ -225,7 +229,7 @@ bool measureRTT(char sendBuff[255], char recvBuff[255], SOCKET& connSocket, sock
 		sum += (recvClickCounter - sendClickCounter);
 	}
 
-		cout << "Time Client: Measure RTT: " << (sum) / 100 << " milliseconds" << endl;
+		cout << "[Client] Measure RTT: " << (sum) / 100 << " milliseconds" << endl;
 	return true;
 }
 
