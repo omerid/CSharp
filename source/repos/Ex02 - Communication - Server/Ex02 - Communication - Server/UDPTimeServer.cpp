@@ -27,6 +27,7 @@ void measureTimeLap(char recvBuff[255], char sendBuff[255]);
 void timerCheck();
 void GetSecondsSinceBeginingOfMonth(tm *timeinfo, char sendBuff[255]);
 void GetDaylightSavings(tm *timeinfo, char sendBuff[255]);
+bool handleClientRequest(SOCKET& connSocket, char sendBuff[255], char recvBuff[255], sockaddr &client_addr, int client_addr_len);
 
 
 void main()
@@ -56,14 +57,21 @@ void handleRequests(SOCKET& connSocket)
 
 	while (1)
 	{
-		cout << "Time Server: Wait for clients' requests\n";
-		if (reciveMsg(connSocket, recvBuff, client_addr, client_addr_len))
-		{
-			requestProcessing(recvBuff, sendBuff);
-			if (!sendMsg(connSocket, sendBuff, client_addr, client_addr_len))
-				return;
-		}
+		cout << "[Server] Wait for clients' requests\n";
+		handleClientRequest(connSocket, sendBuff, recvBuff, client_addr, client_addr_len);
 	}
+}
+
+bool handleClientRequest(SOCKET& connSocket, char sendBuff[255], char recvBuff[255], sockaddr &client_addr, int client_addr_len)
+{
+	if (reciveMsg(connSocket, recvBuff, client_addr, client_addr_len))
+	{
+		requestProcessing(recvBuff, sendBuff);
+		if (!sendMsg(connSocket, sendBuff, client_addr, client_addr_len))
+			return false;
+		return true;
+	}
+	return false;
 }
 
 void requestProcessing(char recvBuff[255], char sendBuff[255])
