@@ -248,16 +248,17 @@ bool initWinSocket(WSAData& wsaData)
 
 bool connectionStart(WSAData& wsaData, SOCKET& m_socket, sockaddr_in& server)
 {
-	if (!bindSocket(m_socket, server))
-		return false;
+	bool error = false;
 
 	if (initWinSocket(wsaData) && socketStart(m_socket))
-	{
 		initAddressAndPort(server);
-		return true;
-	}
 	else
-		return false;
+		error = true;
+
+	if (!bindSocket(m_socket, server))
+		error = true;
+
+	return !error;
 }
 
 bool socketStart(SOCKET& m_socket)
