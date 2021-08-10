@@ -10,25 +10,25 @@ using namespace std;
 
 bool  initWinSocket(WSAData& wsaData);
 bool  connectiontStart(WSAData& wsaData, SOCKET& m_socket, sockaddr_in& server);
-bool  sendMsg(SOCKET& connSocket, char sendBuff[255], sockaddr_in& server);
+bool  publishMessage(SOCKET& connSocket, char sendBuff[255], sockaddr_in& server);
 void  initAddPort(sockaddr_in& server);
-bool  startSocket(SOCKET& connSocket);
-bool  reciveMsg(SOCKET& connSocket, char reciveBuff[255]);
+bool  openSocket(SOCKET& connSocket);
+bool  receiveMessage(SOCKET& connSocket, char reciveBuff[255]);
 bool  GetClientToServerDelayEstimation(SOCKET& connSocket, char sendBuff[255], char reciveBuff[255], sockaddr_in& server);
 bool  measureRTT(char sendBuff[255], char recvBuff[255], SOCKET& connSocket, sockaddr_in& server);
 void  handleRequests(SOCKET& connSocket, sockaddr_in& server);
 void  menu();
 void  showCities();
-void  closeCommunication(SOCKET &m_Socket);
-bool  inputValidator(int numberToValid);
-int   getChoiceFromUser();
+void  closeConnection(SOCKET &m_Socket);
+bool  inputValidator(int validNumber);
+int   getUserChoice();
 int   getCityNumberFromUser();
 
 
 void main()
 {
-	WSAData wsaData;
-	SOCKET m_Socket;
+	wsaData 	wsaData;
+	SOCKET 		m_Socket;
 	sockaddr_in server;
 
 	initWinSocket(wsaData);
@@ -38,13 +38,13 @@ void main()
 
 	handleRequests(m_Socket, server);
 
-	closeCommunication(m_Socket);
+	closeConnection(m_Socket);
 
 	system("pause");
 
 }
 
-void closeCommunication(SOCKET &m_Socket)
+void closeConnection(SOCKET &m_Socket)
 {
 	cout << "Time Client: Closing Connection.\n";
 	closesocket(m_Socket);
@@ -54,38 +54,38 @@ void handleRequests(SOCKET& connSocket, sockaddr_in& server)
 {
 	char sendBuff[255];
 	char recvBuff[255];
-	int choiceFromUser;
+	int  userChoice;
 
 	while (1)
 	{
-		choiceFromUser = getChoiceFromUser();
+		userChoice = getUserChoice();
 
-		if (choiceFromUser == 0)
+		if (userChoice == 0)
 			cout << "Time Client: Quit request" << endl;
 		
 		else
 		{
-			if (choiceFromUser == 12)
+			if (userChoice == 12)
 			{
 				int cityNumberFromUser = getCityNumberFromUser();
-				snprintf(sendBuff, 255, "%d,%d", cityNumberFromUser, choiceFromUser);
+				snprintf(sendBuff, 255, "%d,%d", cityNumberFromUser, userChoice);
 			}
 			else
-				snprintf(sendBuff, 255, "%d", choiceFromUser);
+				snprintf(sendBuff, 255, "%d", userChoice);
 
-			if (choiceFromUser == 4)
+			if (userChoice == 4)
 			{
 				if (GetClientToServerDelayEstimation(connSocket, sendBuff, recvBuff, server) == false)
 					break;
 			}
-			else if (choiceFromUser == 5)
+			else if (userChoice == 5)
 			{
 				if (measureRTT(sendBuff, recvBuff, connSocket, server) == false)
 					break;
 			}
 			else
 			{
-				if (sendMsg(connSocket, sendBuff, server) == false || reciveMsg(connSocket, recvBuff) == false)
+				if (publishMessage(connSocket, sendBuff, server) == false || receiveMessage(connSocket, recvBuff) == false)
 					break;
 			}
 		}
@@ -97,7 +97,7 @@ void handleRequests(SOCKET& connSocket, sockaddr_in& server)
 
 int getCityNumberFromUser()
 {
-	int input;
+	int  input;
 	char city[255];
 
 	showCities();
@@ -130,9 +130,9 @@ void showCities()
 	cout << "5.  Other" << endl;
 }
 
-bool inputValidator(int numberToValid)
+bool inputValidator(int validNumber)
 {
-	return numberToValid >= 1 && numberToValid <= 5;
+	return validNumber >= 1 && validNumber <= 5;
 }
 
 bool initWinSocket(WSAData& wsaData)
@@ -149,13 +149,13 @@ bool initWinSocket(WSAData& wsaData)
 bool connectiontStart(WSAData& wsaData, SOCKET& m_socket, sockaddr_in& server)
 {
 	initWinSocket(wsaData);
-	if (!startSocket(m_socket))
+	if (!openSocket(m_socket))
 		return false;
 	initAddPort(server);
 	return true;
 }
 
-bool startSocket(SOCKET& connSocket)
+bool openSocket(SOCKET& connSocket)
 {
 	connSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (INVALID_SOCKET == connSocket)
@@ -175,7 +175,7 @@ void initAddPort(sockaddr_in& server)
 	server.sin_port = htons(TIME_PORT);
 }
 
-bool sendMsg(SOCKET& connSocket, char sendBuff[255], sockaddr_in& server)
+bool publishMessage(SOCKET& connSocket, char sendBuff[255], sockaddr_in& server)
 {
 	int bytesSent = sendto(connSocket, sendBuff, (int)strlen(sendBuff), 0, (const sockaddr *)&server, sizeof(server));
 	if (SOCKET_ERROR == bytesSent)
@@ -189,7 +189,7 @@ bool sendMsg(SOCKET& connSocket, char sendBuff[255], sockaddr_in& server)
 	return true;
 }
 
-bool reciveMsg(SOCKET& connSocket, char reciveBuff[255])
+bool receiveMessage(SOCKET& connSocket, char reciveBuff[255])
 {
 	int bytesRecv = recv(connSocket, reciveBuff, 255, 0);
 	if (SOCKET_ERROR == bytesRecv)
@@ -206,23 +206,23 @@ bool reciveMsg(SOCKET& connSocket, char reciveBuff[255])
 
 bool GetClientToServerDelayEstimation(SOCKET& connSocket, char sendBuff[255], char reciveBuff[255], sockaddr_in& server)
 {
-	DWORD reciveLong[100];
+	DWORD receiveLong[100];
 	bool error = false;
 
 	for (int i = 0; i < 100; i++)
-		if (sendMsg(connSocket, sendBuff, server) == false)
+		if (publishMessage(connSocket, sendBuff, server) == false)
 			error = true;
 
 	for (int i = 0; i < 100; i++)
 	{
-		if (reciveMsg(connSocket, reciveBuff) == false)
+		if (receiveMessage(connSocket, reciveBuff) == false)
 			error = true;
-		reciveLong[i] = atol(reciveBuff); 
+		receiveLong[i] = atol(reciveBuff); 
 	}
 
 	float avg = 0;
 	for (int i = 1; i < 100; i++)
-		avg = avg + reciveLong[i] - reciveLong[i - 1];
+		avg = avg + receiveLong[i] - receiveLong[i - 1];
 
 	cout << "Time Client: The Delay is: " << avg/100 << "Milliseconds" << endl;
 	return !error;
@@ -233,13 +233,13 @@ bool measureRTT(char sendBuff[255], char recvBuff[255], SOCKET& connSocket, sock
 	DWORD sum = 0;
 	DWORD recvClickCounter;
 	DWORD sendClickCounter;
-	bool error = false;
+	bool  error = false;
 
 	for (int i = 0; i < 100; i++)
 	{
 		sendClickCounter = GetTickCount();
-		if(sendMsg(connSocket, sendBuff, server))
-			if (reciveMsg(connSocket, recvBuff) == false)
+		if(publishMessage(connSocket, sendBuff, server))
+			if (receiveMessage(connSocket, recvBuff) == false)
 				error = true;
 
 		recvClickCounter = GetTickCount();
@@ -250,7 +250,7 @@ bool measureRTT(char sendBuff[255], char recvBuff[255], SOCKET& connSocket, sock
 	return !error;
 }
 
-int getChoiceFromUser() 
+int getUserChoice() 
 {
 	menu();
 	int input;
