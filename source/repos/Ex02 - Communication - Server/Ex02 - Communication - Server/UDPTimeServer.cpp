@@ -11,90 +11,90 @@ using namespace std;
 
 clock_t startTime;
 clock_t endTime;
-bool timerOn = false;
+bool    timerOn = false;
 
 bool initWinSocket(WSAData& wsaData);
-bool connectionStart(WSAData& wsaData, SOCKET& m_socket, sockaddr_in& server);
+bool openConnection(WSAData& wsaData, SOCKET& m_socket, sockaddr_in& server);
 bool socketStart(SOCKET& m_socket);
-bool sendMsg(SOCKET& m_socket, char sendBuff[255], sockaddr& client_addr, int& client_addr_len);
-bool reciveMsg(SOCKET& m_socket, char recvBuff[255], sockaddr& client_addr, int& client_addr_len);
-bool bindSocket(SOCKET& m_socket, sockaddr_in& serverService);
+bool messageSender(SOCKET& m_socket, char sendBuff[255], sockaddr& client_addr, int& client_addr_len);
+bool receiveMessage(SOCKET& m_socket, char receiveBuff[255], sockaddr& client_addr, int& client_addr_len);
+bool sockerBinder(SOCKET& m_socket, sockaddr_in& serverService);
 void initAddressAndPort(sockaddr_in& serverService);
-void handleRequests(SOCKET& connSocket);
-void requestProcessing(char recvBuff[255], char sendBuff[255]);
-void GetTimeWithoutDateInCity(char recvBuff[255], char sendBuff[255], int userRequestedCity);
-void measureTimeLap(char recvBuff[255], char sendBuff[255]);
-void timerCheck();
-void GetSecondsSinceBeginingOfMonth(tm *timeinfo, char sendBuff[255]);
+void handleRequests(SOCKET& connectionSocket);
+void processRequests(char receiveBuff[255], char sendBuff[255]);
+void GetTimeWithoutDateInCity(char receiveBuff[255], char sendBuff[255], int requestedCity);
+void timeLapMeasurer(char receiveBuff[255], char sendBuff[255]);
+void timeValidator();
+void GetBegginingOfMonthSeconds(tm *timeinfo, char sendBuff[255]);
 void GetDaylightSavings(tm *timeinfo, char sendBuff[255]);
-bool handleClientRequest(SOCKET& connSocket, char sendBuff[255], char recvBuff[255], sockaddr &client_addr, int client_addr_len);
+bool handleClientRequest(SOCKET& connectionSocket, char sendBuff[255], char receiveBuff[255], sockaddr &client_addr, int client_addr_len);
 
 
 void main()
 {
-	WSAData wsaData;
-	SOCKET m_Socket;
+	wsaData     wsaData;
+	SOCKET      m_Socket;
 	sockaddr_in server;
 
-	if (!connectionStart(wsaData, m_Socket, server))
+	if (!openConnection(wsaData, m_Socket, server))
 		return;
 
 	handleRequests(m_Socket);
 
-	cout << "Time Server: Some Error Occurred - Closing Connection.\n";
+	cout << "Time Server: An internal error has occurred, - Closing connection pool.\n";
 	closesocket(m_Socket);
 	WSACleanup();
 
 	system("pause");
 }
 
-void handleRequests(SOCKET& connSocket)
+void handleRequests(SOCKET& connectionSocket)
 {
 	sockaddr client_addr;
-	int client_addr_len = sizeof(client_addr);
+	int  client_addr_len = sizeof(client_addr);
 	char sendBuff[255];
-	char recvBuff[255];
+	char receiveBuff[255];
 
 	while (1)
 	{
 		cout << "Server: Wait for clients' requests\n";
-		handleClientRequest(connSocket, sendBuff, recvBuff, client_addr, client_addr_len);
+		handleClientRequest(connectionSocket, sendBuff, receiveBuff, client_addr, client_addr_len);
 	}
 }
 
-bool handleClientRequest(SOCKET& connSocket, char sendBuff[255], char recvBuff[255], sockaddr &client_addr, int client_addr_len)
+bool handleClientRequest(SOCKET& connectionSocket, char sendBuff[255], char receiveBuff[255], sockaddr &client_addr, int client_addr_len)
 {
-	if (reciveMsg(connSocket, recvBuff, client_addr, client_addr_len))
+	if (receiveMessage(connectionSocket, receiveBuff, client_addr, client_addr_len))
 	{
-		requestProcessing(recvBuff, sendBuff);
-		if (!sendMsg(connSocket, sendBuff, client_addr, client_addr_len))
+		processRequests(receiveBuff, sendBuff);
+		if (!messageSender(connectionSocket, sendBuff, client_addr, client_addr_len))
 			return false;
 		return true;
 	}
 	return false;
 }
 
-void requestProcessing(char recvBuff[255], char sendBuff[255])
+void processRequests(char receiveBuff[255], char sendBuff[255])
 {
-	int userRequest;
-	int userRequestedCity;
+	int    userRequest;
+	int    requestedCity;
 	time_t timer;
 	tm *timeinfo;
 
 	time(&timer);
 	timeinfo = localtime(&timer);
 
-	timerCheck();
+	timeValidator();
 
-	if (strlen(recvBuff) > 2)
+	if (strlen(receiveBuff) > 2)
 	{
 
-		userRequestedCity = recvBuff[2] - '0';
-		recvBuff[1] = '\0';
+		requestedCity = receiveBuff[2] - '0';
+		receiveBuff[1] = '\0';
 		userRequest = 12;
 	}
 	else
-		userRequest = atoi(recvBuff);
+		userRequest = atoi(receiveBuff);
 
 
 	switch (userRequest)
@@ -133,7 +133,7 @@ void requestProcessing(char recvBuff[255], char sendBuff[255])
 		strftime(sendBuff, 255, "%d/%m", timeinfo);
 		break;
 	case 9:
-		GetSecondsSinceBeginingOfMonth(timeinfo, sendBuff);
+		GetBegginingOfMonthSeconds(timeinfo, sendBuff);
 		break;
 	case 10:
 		//GetWeekOfYear 
@@ -144,11 +144,11 @@ void requestProcessing(char recvBuff[255], char sendBuff[255])
 	   	break;
 	case 12:
 		//GetTimeWithoutDateInCity 
-		GetTimeWithoutDateInCity(recvBuff, sendBuff, userRequestedCity);
+		GetTimeWithoutDateInCity(receiveBuff, sendBuff, requestedCity);
 		break;
 	case 13:
-		//MeasureTimeLap 
-		measureTimeLap(recvBuff, sendBuff);
+		//timeLapMeasurer 
+		timeLapMeasurer(receiveBuff, sendBuff);
 		break;
 	default:
 		break;
@@ -166,29 +166,29 @@ void GetDaylightSavings(tm *timeinfo, char sendBuff[255])
 }
 
 
-void GetSecondsSinceBeginingOfMonth(tm *timeinfo, char sendBuff[255])
+void GetBegginingOfMonthSeconds(tm *timeinfo, char sendBuff[255])
 {
-	int calculate;
-	calculate = timeinfo->tm_mday * 24 * 60 * 60;
-	calculate += timeinfo->tm_hour * 60 * 60;
-	calculate += timeinfo->tm_min * 60;
-	calculate += timeinfo->tm_sec;
-	snprintf(sendBuff, 255, "%d", calculate);
+	int seconds;
+	seconds =  timeinfo->tm_mday * 24 * 60 * 60;
+	seconds += timeinfo->tm_hour * 60 * 60;
+	seconds += timeinfo->tm_min * 60;
+	seconds += timeinfo->tm_sec;
+	snprintf(sendBuff, 255, "%d", seconds);
 }
 
-void timerCheck()
+void timeValidator()
 {
 	if (timerOn)
 	{
-		clock_t checkTimer = clock();
-		clock_t clockTicksTaken = checkTimer - startTime;
-		double timeInSeconds = clockTicksTaken / (double)CLOCKS_PER_SEC;
+		clock_t clockTimer 		= clock();
+		clock_t clockTicksTaken = clockTimer - startTime;
+		double  timeInSeconds 	= clockTicksTaken / (double)CLOCKS_PER_SEC;
 		if (timeInSeconds > 180) 
 			timerOn = false;
 	}
 }
 
-void measureTimeLap(char recvBuff[255], char sendBuff[255])
+void timeLapMeasurer(char receiveBuff[255], char sendBuff[255])
 {
 	if (timerOn)
 	{
@@ -206,15 +206,15 @@ void measureTimeLap(char recvBuff[255], char sendBuff[255])
 	}
 }
 
-void GetTimeWithoutDateInCity(char recvBuff[255], char sendBuff[255], int userRequestedCity)
+void GetTimeWithoutDateInCity(char receiveBuff[255], char sendBuff[255], int requestedCity)
 {
-	time_t rawtime;
+	time_t rawTime;
 	struct tm * ptm;
 
-	time(&rawtime);
-	ptm = gmtime(&rawtime);
+	time(&rawTime);
+	ptm = gmtime(&rawTime);
 
-	switch (userRequestedCity)
+	switch (requestedCity)
 	{
 	case 1:
 		snprintf(sendBuff, 255, "%2d:%02d:%02d", (ptm->tm_hour+ 9)%24, ptm->tm_min, ptm->tm_sec);
@@ -238,15 +238,16 @@ void GetTimeWithoutDateInCity(char recvBuff[255], char sendBuff[255], int userRe
 
 bool initWinSocket(WSAData& wsaData)
 {
+	bool retVal = true;
 	if (NO_ERROR != WSAStartup(MAKEWORD(2, 2), &wsaData))
 	{
 		cout << "Time Server: Error at WSAStartup()\n";
-		return false;
+		retVal = false;
 	}
-	return true;
+	return retVal;
 }
 
-bool connectionStart(WSAData& wsaData, SOCKET& m_socket, sockaddr_in& server)
+bool openConnection(WSAData& wsaData, SOCKET& m_socket, sockaddr_in& server)
 {
 	bool error = false;
 
@@ -255,7 +256,7 @@ bool connectionStart(WSAData& wsaData, SOCKET& m_socket, sockaddr_in& server)
 	else
 		error = true;
 
-	if (!bindSocket(m_socket, server))
+	if (!sockerBinder(m_socket, server))
 		error = true;
 
 	return !error;
@@ -263,41 +264,44 @@ bool connectionStart(WSAData& wsaData, SOCKET& m_socket, sockaddr_in& server)
 
 bool socketStart(SOCKET& m_socket)
 {
+	bool retVal = true;
 	m_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (INVALID_SOCKET == m_socket)
 	{
 		cout << "Time Server:: Error at recv(): " << WSAGetLastError() << endl;
 
 		WSACleanup();
-		return false;
+		retVal = false;
 	}
-	else
-		return true;
+
+	return retVal;
 }
 
 void initAddressAndPort(sockaddr_in& serverService)
 {
-	serverService.sin_family = AF_INET;
+	serverService.sin_family 	  = AF_INET;
 	serverService.sin_addr.s_addr = INADDR_ANY;	
-	serverService.sin_port = htons(TIME_PORT);
+	serverService.sin_port 		  = htons(TIME_PORT);
 }
 
-bool bindSocket(SOCKET& m_socket, sockaddr_in& serverService) 
+bool sockerBinder(SOCKET& m_socket, sockaddr_in& serverService) 
 {
+	bool retVal = true;
 	if (SOCKET_ERROR == bind(m_socket, (SOCKADDR *)&serverService, sizeof(serverService)))
 	{
 		cout << "Time Server: Error at bind(): " << WSAGetLastError() << endl;
 		closesocket(m_socket);
 		WSACleanup();
-		return false;
+		retVal = false;
 	}
-	return true;
+	return retVal;
 }
 
-bool sendMsg(SOCKET& m_socket, char sendBuff[255], sockaddr& client_addr, int& client_addr_len)
+bool messageSender(SOCKET& m_socket, char sendBuff[255], sockaddr& client_addr, int& client_addr_len)
 {
 
 	int bytesSent = sendto(m_socket, sendBuff, (int)strlen(sendBuff), 0, (const sockaddr *)&client_addr, client_addr_len);
+
 	if (SOCKET_ERROR == bytesSent)
 	{
 		cout << "Time Server: Error at sendto(): " << WSAGetLastError() << endl;
@@ -310,18 +314,19 @@ bool sendMsg(SOCKET& m_socket, char sendBuff[255], sockaddr& client_addr, int& c
 	return true;
 }
 
-bool reciveMsg(SOCKET& m_socket, char recvBuff[255], sockaddr& client_addr, int& client_addr_len)
+bool receiveMessage(SOCKET& m_socket, char receiveBuff[255], sockaddr& client_addr, int& client_addr_len)
 {
-	int bytesRecv = bytesRecv = recvfrom(m_socket, recvBuff, 255, 0, &client_addr, &client_addr_len);
+	bool retVal = true;
+	int bytesRecv = bytesRecv = recvfrom(m_socket, receiveBuff, 255, 0, &client_addr, &client_addr_len);
 	if (SOCKET_ERROR == bytesRecv)
 	{
 		cout << "Time Server: Error at recvfrom(): " << WSAGetLastError() << endl;
 		closesocket(m_socket);
 		WSACleanup();
-		return false;
+		retVal = false;
 	}
 
-	recvBuff[bytesRecv] = '\0'; 
-	cout << "Time Server: Recieved: " << bytesRecv << " bytes of \"" << recvBuff << "\" message.\n";
-	return true;
+	receiveBuff[bytesRecv] = '\0'; 
+	cout << "Time Server: Recieved: " << bytesRecv << " bytes of \"" << receiveBuff << "\" message.\n";
+	return retVal;
 }
