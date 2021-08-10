@@ -14,7 +14,7 @@ clock_t endTime;
 bool timerOn = false;
 
 bool initWinSocket(WSAData& wsaData);
-bool connectionStart(WSAData& wsaData, SOCKET& connSocket, sockaddr_in& server);
+bool connectionStart(WSAData& wsaData, SOCKET& m_socket, sockaddr_in& server);
 bool socketStart(SOCKET& m_socket);
 bool sendMsg(SOCKET& m_socket, char sendBuff[255], sockaddr& client_addr, int& client_addr_len);
 bool reciveMsg(SOCKET& m_socket, char recvBuff[255], sockaddr& client_addr, int& client_addr_len);
@@ -57,7 +57,7 @@ void handleRequests(SOCKET& connSocket)
 
 	while (1)
 	{
-		cout << "[Server] Wait for clients' requests\n";
+		cout << "Server: Wait for clients' requests\n";
 		handleClientRequest(connSocket, sendBuff, recvBuff, client_addr, client_addr_len);
 	}
 }
@@ -246,9 +246,12 @@ bool initWinSocket(WSAData& wsaData)
 	return true;
 }
 
-bool connectionStart(WSAData& wsaData, SOCKET& connSocket, sockaddr_in& server)
+bool connectionStart(WSAData& wsaData, SOCKET& m_socket, sockaddr_in& server)
 {
-	if (initWinSocket(wsaData) && socketStart(connSocket))
+	if (!bindSocket(m_socket, server))
+		return false;
+
+	if (initWinSocket(wsaData) && socketStart(m_socket))
 	{
 		initAddressAndPort(server);
 		return true;
@@ -274,7 +277,7 @@ bool socketStart(SOCKET& m_socket)
 void initAddressAndPort(sockaddr_in& serverService)
 {
 	serverService.sin_family = AF_INET;
-	serverService.sin_addr.s_addr = INADDR_ANY;	//inet_addr("127.0.0.1");
+	serverService.sin_addr.s_addr = INADDR_ANY;	
 	serverService.sin_port = htons(TIME_PORT);
 }
 
