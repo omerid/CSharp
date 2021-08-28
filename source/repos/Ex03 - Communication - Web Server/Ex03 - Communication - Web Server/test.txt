@@ -1,0 +1,9 @@
+Wahts up?
+
+
+	if (langParam != " ")
+	{
+		fileName = fileName.substr(0, path.find('.'));
+		fileName += ("-" + langParam + html);
+		cout << fileName << endl;
+	}
