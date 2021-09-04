@@ -28,5 +28,6 @@
     <None Include="test.en.html">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="test-fr.html" />
   </ItemGroup>
 </Project>

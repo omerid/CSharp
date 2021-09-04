@@ -129,6 +129,7 @@
     <Text Include="test.txt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="test-fr.html" />
     <None Include="test.en.html" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
